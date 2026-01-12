@@ -1,32 +1,362 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <link rel="stylesheet" href="styles.css" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>PakePlus App</title>
-        <script type="module" src="/main.js" defer></script>
-    </head>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>爱眼城数字化工作平台</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        h1 {
+            color: white;
+            font-size: 2.8em;
+            margin: 0;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+            letter-spacing: 1px;
+        }
+        
+        .button-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            padding: 25px 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .btn {
+            padding: 10px 5px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.2);
+            flex: 1;
+            min-width: 120px;
+            max-width: 150px;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+        }
+        
+        .btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+        
+        .btn1 { background: linear-gradient(135deg, #FF6B6B, #ee5a52); }
+        .btn2 { background: linear-gradient(135deg, #FFD93D, #f4d03f); }
+        .btn3 { background: linear-gradient(135deg, #4ECDC4, #44a08d); }
+        .btn4 { background: linear-gradient(135deg, #A8E6CF, #66b0a7); }
+        .btn5 { background: linear-gradient(135deg, #FFA07A, #ff8c69); }
+        .btn6 { background: linear-gradient(135deg, #9B59B6, #8e44ad); }
+        .btn7 { background: linear-gradient(135deg, #45B7D1, #2980b9); }
+        .btn8 { background: linear-gradient(135deg, #FFEAA7, #f4d160); }
+        
+        .content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+        }
+        
+        .desktop {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            border-radius: 25px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+            max-width: 900px;
+            width: 90%;
+            text-align: center;
+            border: 1px solid rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .desktop::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        
+        .welcome {
+            padding: 25px;
+            margin-bottom: 30px;
+            color: #34495e;
+            font-size: 1.2em;
+            line-height: 1.7;
+        }
+        
+        .welcome h3 {
+            font-size: 1.8em;
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .module-list {
+            text-align: left;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .module-list li {
+            margin: 8px 0;
+            padding: 8px 0;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+            border-bottom: 1px dashed #e0e6ed;
+        }
+        
+        .module-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .module-list li:hover {
+            color: #667eea;
+            padding-left: 10px;
+        }
+        
+        .module-list strong {
+            color: #667eea;
+            font-weight: 700;
+            display: inline-block;
+            width: 130px;
+        }
+        
+        .footer {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 30px;
+            font-size: 1em;
+            background: rgba(255, 255, 255, 0.7);
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        /* 全屏按钮样式 */
+        .top-nav {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+        
+        .nav-btn:active {
+            transform: translateY(0);
+        }
+        
+        @media (max-width: 768px) {
+            .button-grid {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+                padding: 20px 15px;
+            }
+            
+            .btn {
+                height: 55px;
+                font-size: 12px;
+                padding: 10px 6px;
+                min-width: 200px;
+                max-width: 100%;
+            }
+            
+            .desktop {
+                padding: 30px 20px;
+                width: 95%;
+            }
+            
+            .welcome h3 {
+                font-size: 1.5em;
+            }
+            
+            .module-list strong {
+                width: 110px;
+                font-size: 1em;
+            }
+            
+            .module-list li {
+                font-size: 1em;
+            }
+            
+            h1 {
+                font-size: 2.2em;
+            }
+            
+            .top-nav {
+                top: 5px;
+                right: 5px;
+            }
+            
+            .nav-btn {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- 全屏按钮 -->
+    <div class="top-nav">
+        <button class="nav-btn" id="fullscreenBtn">🔍 全屏</button>
+    </div>
+    
+    <div class="header">
+        <h1>爱眼城数字化工作平台</h1>
+    </div>
+    
+    <div class="button-grid">
+        <!-- 8个HTML页面按钮 (添加target="_blank") -->
+        <a href="kehuguanli.html" class="btn btn1" target="_blank">客户管理</a>
+        <a href="yingzhiyinghui.html" class="btn btn2" target="_blank">❓应知应会</a>
+        <a href="daibanshixiang.html" class="btn btn3" target="_blank">⏰ 待办事项</a>
+        <a href="gongzuorizhi.html" class="btn btn4" target="_blank">📅 工作日志</a>
+        <a href="quguangdujisuan.html" class="btn btn5" target="_blank">🧰 屈光度计算</a>
+        <a href="tonggaoceliang.html" class="btn btn6" target="_blank">📐 瞳高测量</a>
+        <a href="shigongnengfenxi.html" class="btn btn7" target="_blank">§ 视功能分析</a>
+        <a href="gongsiwenjian.html" class="btn btn8" target="_blank">📑 公司文件</a>
+    </div>
+    
+    <div class="content">
+        <div class="desktop">
+                <p>本平台集成日常办公、制度学习与专业成长资源，助您高效工作、快速提升！</p>
+                <ul class="module-list">
+                  <li><strong>👥 客户管理</strong>：维护客户回访跟进记录</li>
+                  <li><strong>❓ 应知应会</strong>：员工必备500问</li>
+                  <li><strong>⏰ 待办事项</strong>：记录未来发生的事件</li>
+                  <li><strong>📅 工作日志</strong>：记录每日任务与成果</li>
+                  <li><strong>🧰 屈光计算</strong>：眼视光屈光度计算工具</li>
+                  <li><strong>📐 瞳高测量 </strong>：实际戴镜高度测量</li>
+                  <li><strong> §  视功能分析 </strong>：双眼视功能诊断分析</li>
+                  <li><strong>📑 公司文件</strong>：企业内部管理制度</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        爱眼城数字化工作平台 - 为您提供全方位的数字化解决方案
+    </div>
+    
+    <script>
+        // 全屏功能
+        document.getElementById('fullscreenBtn').addEventListener('click', function() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log('无法进入全屏模式:', err);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        });
 
-    <body>
-        <main class="container">
-            <h1>Welcome to PakePlus</h1>
-            <form class="row" id="greet-form">
-                <input id="inputValue" placeholder="Enter a something..." />
-            </form>
-            <div class="resultBox">
-                <span>result: </span>
-                <span id="result"></span>
-            </div>
-            <div class="invokeBox">
-                <button id="openUrl">open_url_browser</button>
-                <button id="openUrlNew">open_url_new</button>
-                <button id="runCommand">run_command</button>
-                <button id="downloadFile">download_file</button>
-                <button id="getExeDir">get_exe_dir</button>
-                <button id="getEnvVar">get_env_var</button>
-                <button id="findPort">find_port</button>
-            </div>
-        </main>
-    </body>
+        // ESC键退出全屏
+        document.addEventListener('fullscreenchange', function() {
+            if (!document.fullscreenElement) {
+                console.log('退出全屏模式');
+            }
+        });
+        
+        // 添加按钮点击音效反馈
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                // 添加点击动画效果
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+                
+                // 如果是外部链接，延迟恢复transform效果
+                if(this.href && !this.href.includes(window.location.hostname)) {
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 300);
+                }
+            });
+        });
+    </script>
+</body>
 </html>
+
+
+
