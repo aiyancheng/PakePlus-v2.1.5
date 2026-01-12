@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>永州爱眼城客户管理系统</title>
+  <style>
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+    }
+    
+    body {
+      font-family: "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+      min-height: 100vh;
+      width: 100vw;
+      overflow-x: hidden;
+    }
+    
+    .container {
+      width: 100%;
+      min-height: 100vh;
+      background: white;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .header {
+      background: linear-gradient(to right, #1a5fb4, #2980b9);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    
+    .content-area {
+      flex: 1;
+      position: relative;
+      background: #fff;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .welcome {
+      padding: 40px 30px;
+      text-align: center;
+      color: #2c3e50;
+      flex: 1;
+      overflow-y: auto;
+    }
+    
+    .welcome h3 {
+      font-size: clamp(20px, 3vw, 28px);
+      margin-bottom: 20px;
+      color: #1a5fb4;
+    }
+    
+    .module-list {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: left;
+      padding-left: 20px;
+    }
+    
+    .module-list li {
+      margin: 10px 0;
+      font-size: clamp(13px, 1.8vw, 16px);
+      color: #34495e;
+      line-height: 1.5;
+    }
+    
+    .module-list strong { color: #2980b9; }
+    
+    .control-panel { 
+      padding: 12px 20px; 
+      background: #f8f9fa; 
+      border-top: 1px solid #eee; 
+      text-align: right; 
+    }
+    
+    .control-btn { 
+      padding: 8px 14px; 
+      font-size: 13px; 
+      margin-left: 8px; 
+      background: #7f8c8d; 
+      color: white; 
+      border: none; 
+      border-radius: 6px; 
+      cursor: pointer; 
+    }
+    
+    .control-btn:hover { 
+      background: #95a5a6; 
+    }
+    
+    .hidden { 
+      display: none !important; 
+    }
+
+    /* 门店选择页样式 */
+    .store-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 18px;
+      padding: 20px;
+      width: 100%;
+    }
+    
+    .store-btn {
+      padding: 18px 10px;
+      border-radius: 18px;
+      font-weight: 600;
+      font-size: 15px;
+      color: white;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: all 0.25s ease;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .store-btn:hover { 
+      transform: translateY(-3px); 
+      box-shadow: 0 6px 14px rgba(0,0,0,0.18); 
+    }
+    
+    .click-counter {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(255, 255, 255, 0.3);
+      color: white;
+      font-size: 10px;
+      padding: 2px 5px;
+      border-radius: 10px;
+      font-weight: bold;
+      display: none;
+    }
+    
+    .click-counter.show { 
+      display: block; 
+    }
+
+    /* 客户管理登录页样式  */
+    .login-container {
+      width: 100%;
+      max-width: 500px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      margin: 20px auto;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .login-header {
+      padding: 40px 30px 30px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .login-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.3);
+    }
+    
+    .login-header h1 {
+      font-size: clamp(24px, 4vw, 28px);
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      margin-bottom: 10px;
+    }
+    
+    .login-header p {
+      font-size: 15px;
+      opacity: 0.9;
+      margin-top: 5px;
+    }
+    
+    .login-content {
+      padding: 30px 40px 40px;
+    }
+    
+    .password-group {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    
+    .password-group i {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #888;
+      font-size: 18px;
+    }
+    
+    input[type="password"] {
+      width: 100%;
+      padding: 16px 20px 16px 50px;
+      border: 2px solid #e6e6e6;
+      border-radius: 12px;
+      font-size: 16px;
+      outline: none;
+      transition: all 0.3s ease;
+      background: #fafafa;
+      font-family: "Microsoft YaHei", sans-serif;
+    }
+    
+    input:focus {
+      border-color: #4a90e2;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
+    }
+    
+    .login-btn {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      margin: 20px 0 15px;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+    }
+    
+    .login-btn:active {
+      transform: translateY(0);
+    }
+    
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 15px;
+      color: #666;
+      font-size: 14px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+    
+    .back-link:hover {
+      color: #4a90e2;
+      text-decoration: underline;
+    }
+    
+    .forgot-password {
+      color: #888;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+    
+    .error {
+      color: #e53935;
+      text-align: center;
+      margin-top: 10px;
+      min-height: 20px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    /* 客户管理主界面样式 */
+    .main-page {
+      width: 100%;
+      max-width: 800px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      margin: 20px auto;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    .main-header {
+      padding: 40px 30px 30px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .main-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.3);
+    }
+    
+    .main-header h1 {
+      font-size: clamp(24px, 4vw, 28px);
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      margin-bottom: 10px;
+    }
+    
+    .main-header p {
+      font-size: 15px;
+      opacity: 0.9;
+      margin-top: 5px;
+    }
+    
+    .function-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      padding: 30px;
+    }
+    
+    .function-card {
+      background: white;
+      border-radius: 12px;
+      padding: 25px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 1px solid #eee;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: #333;
+    }
+    
+    .function-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      border-color: #4a90e2;
+    }
+    
+    .function-icon {
+      font-size: 28px;
+      margin-bottom: 12px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(74, 144, 226, 0.1);
+      color: #4a90e2;
+    }
+    
+    .function-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #2c3e50;
+    }
+    
+    .function-desc {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.4;
+    }
+    
+    .footer-note {
+      padding: 20px;
+      text-align: center;
+      color: #888;
+      font-size: 13px;
+      border-top: 1px solid #f0f0f0;
+      background: #fafafa;
+    }
+
+    /* 弹窗样式 */
+    .password-modal, .admin-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    
+    .admin-modal { 
+      background: rgba(0,0,0,0.7); 
+      z-index: 2000; 
+    }
+    
+    .modal-content, .admin-modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      max-width: 400px;
+      width: 90%;
+    }
+    
+    .admin-modal-content { 
+      text-align: center; 
+    }
+    
+    .modal-buttons, .admin-modal-buttons { 
+      display: flex; 
+      justify-content: space-between; 
+      margin-top: 20px; 
+    }
+    
+    .modal-btn, .admin-modal-btn { 
+      padding: 10px 20px; 
+      border: none; 
+      border-radius: 6px; 
+      font-weight: bold; 
+      cursor: pointer; 
+      font-size: 16px; 
+    }
+    
+    .confirm-btn { 
+      background-color: #2ecc71; 
+      color: white; 
+    }
+    
+    .cancel-btn { 
+      background-color: #e74c3c; 
+      color: white; 
+    }
+    
+    .admin-confirm-btn { 
+      background-color: #3498db; 
+      color: white; 
+    }
+    
+    .admin-cancel-btn { 
+      background-color: #95a5a6; 
+      color: white; 
+    }
+    
+    /* 桌面优化样式 */
+    .desktop-optimization {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      z-index: 9999;
+      display: none;
+    }
+    
+    .desktop-optimization h2 {
+      color: #1a5fb4;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    
+    .desktop-optimization p {
+      margin-bottom: 15px;
+      color: #333;
+      line-height: 1.5;
+    }
+    
+    .desktop-optimization-btn {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      background: #1a5fb4;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    
+    .desktop-optimization-btn:hover {
+      background: #0d47a1;
+    }
+    
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #999;
+    }
+    
+    /* 返回主界面按钮样式 */
+    .back-to-home {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: #1a5fb4;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      z-index: 1001;
+      transition: all 0.3s ease;
+    }
+    
+    .back-to-home:hover {
+      background: #0d47a1;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    
+    @media (max-width: 768px) {
+      .header { 
+        padding: 15px; 
+        font-size: 20px; 
+      }
+      
+      .welcome { 
+        padding: 20px 15px; 
+      }
+      
+      .store-grid { 
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
+        gap: 12px; 
+        padding: 15px; 
+      }
+      
+      .login-container, .main-page { 
+        margin: 10px; 
+        border-radius: 15px; 
+      }
+      
+      .login-content, .function-grid { 
+        padding: 20px; 
+      }
+      
+      .login-header, .main-header { 
+        padding: 30px 20px 20px; 
+      }
+      
+      .function-grid { 
+        grid-template-columns: 1fr; 
+      }
+      
+      .back-to-home {
+        top: 5px;
+        left: 5px;
+        font-size: 12px;
+        padding: 8px 12px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .store-grid { 
+        grid-template-columns: repeat(2, 1fr); 
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 返回主界面按钮 -->
+  <a href="index.html" class="back-to-home" target="_self">🔙 返回主界面</a>
+
+  <div class="container">
+    <div class="header">永州爱眼城客户管理系统</div>
+
+    <div class="content-area">
+      <!-- 欢迎页面 -->
+      <div id="welcomeContent" class="welcome">
+        <h3>🌟 欢迎使用永州爱眼城客户管理系统</h3>
+        <p>本系统用于维护客户回访跟进记录，提升客户服务质量</p>
+        <ul class="module-list">
+          <li><strong>👥 门店选择</strong>：选择您所在的门店</li>
+          <li><strong>📝 新增客户登记</strong>：录入新客户信息</li>
+          <li><strong>📞 当日回访客户</strong>：安排今日回访计划</li>
+          <li><strong>📋 复查记录管理</strong>：管理客户复查记录</li>
+        </ul>
+      </div>
+
+      <!-- 客户管理系统内容 -->
+      <div id="customerManagement" class="hidden">
+        <div id="storeSelectPage" class="welcome">
+          <h3>请选择您的门店</h3>
+          <div class="store-grid" id="storeGrid"></div>
+        </div>
+
+        <div class="login-container hidden" id="loginPage">
+          <div class="login-header" id="loginHeader" style="background: linear-gradient(135deg, #1e88e5, #0d47a1);">
+            <h1 id="loginTitle">🔒 客户管理系统</h1>
+            <p>请输入本门店访问密码</p>
+          </div>
+          <div class="login-content">
+            <div class="password-group">
+              <i>🔐</i>
+              <input type="password" id="passwordInput" placeholder="请输入访问密码" autofocus autocomplete="off" />
+            </div>
+            <button class="login-btn" id="loginSubmitBtn" style="background: linear-gradient(135deg, #1e88e5, #0d47a1);" onclick="checkPassword()">进入系统</button>
+            <div class="error" id="errorMsg"></div>
+            <div class="back-link" id="backLink" onclick="goBackToStoreSelect()">← 返回选择门店</div>
+            <div class="back-link forgot-password">忘记密码？请立即联系管理员！</div>
+          </div>
+        </div>
+
+        <div class="main-page hidden" id="mainPage">
+          <div class="main-header" id="mainHeader" style="background: linear-gradient(135deg, #1e88e5, #0d47a1);">
+            <h1 id="mainTitle">客户管理系统</h1>
+            <p>点击功能卡片开始工作</p>
+          </div>
+          <div class="function-grid" id="functionGrid"></div>
+          <div class="footer-note">
+            永州爱眼城 · 客户跟进管理
+          </div>
+        </div>
+      </div>
+
+      <!-- 门店密码验证弹窗 -->
+      <div id="passwordModal" class="password-modal hidden">
+        <div class="modal-content">
+          <h2 id="modalTitle">请输入密码</h2>
+          <input type="password" id="logPasswordInput" placeholder="输入门店密码" autocomplete="off" />
+          <div class="error" id="logErrorMessage"></div>
+          <div class="modal-buttons">
+            <button class="modal-btn cancel-btn" onclick="closeLogModal()">取消</button>
+            <button class="modal-btn confirm-btn" onclick="verifyLogPassword()">确认</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 管理密码验证弹窗 -->
+      <div id="adminModal" class="admin-modal hidden">
+        <div class="admin-modal-content">
+          <h2>🔐 管理员验证</h2>
+          <p>请输入管理员密码以清除门店选择</p>
+          <input type="password" id="adminPasswordInput" placeholder="输入管理员密码" autocomplete="off" />
+          <div class="error" id="adminErrorMsg"></div>
+          <div class="admin-modal-buttons">
+            <button class="admin-modal-btn admin-cancel-btn" onclick="closeAdminModal()">取消</button>
+            <button class="admin-modal-btn admin-confirm-btn" onclick="verifyAdminPassword()">确认</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="control-panel">
+      <button class="control-btn" onclick="toggleFullScreen()">🖥️ 全屏</button>
+      <button class="control-btn" onclick="showWelcome()">🏠 首页</button>
+    </div>
+    
+    <!-- 桌面优化提示 -->
+    <div id="desktopOptimization" class="desktop-optimization">
+      <button class="close-btn" onclick="closeDesktopOptimization()">&times;</button>
+      <h2>桌面体验优化</h2>
+      <p>为了获得更好的桌面使用体验，我们为您提供了以下优化建议：</p>
+      <p>1. 使用浏览器全屏模式（F11）以获得最佳视觉效果</p>
+      <p>2. 定期清理浏览器缓存以提升页面加载速度</p>
+      <p>3. 保持稳定的网络连接以确保功能正常运行</p>
+      <button class="desktop-optimization-btn" onclick="toggleFullScreen()">开启全屏模式</button>
+      <button class="desktop-optimization-btn" onclick="closeDesktopOptimization()">我知道了</button>
+    </div>
+  </div>
+
+  <script>
+    // 防止查看源代码
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'F12' || (e.ctrlKey && e.key === 'u') || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      return false;
+    });
+
+    document.onkeydown = function(e) {
+      if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73) || 
+          (e.ctrlKey && e.shiftKey && e.keyCode == 74) || (e.ctrlKey && e.keyCode == 85)) {
+        return false;
+      }
+    };
+
+
+    // 管理员密码
+    const ADMIN_PASSWORD = "admin123456";
+
+    // 点击计数器
+    const storeClickCounters = {
+      customerManagement: {}
+    };
+
+    let currentClearStore = { module: null, storeId: null };
+
+    // 客户管理系统配置
+    const CUSTOMER_STORES = {
+      "徐家井店": { name: "徐家井店", password: "xjj123", gradient: "linear-gradient(135deg, #e74c3c, #c0392b)" },
+      "黄古山店": { name: "黄古山店", password: "hgs123", gradient: "linear-gradient(135deg, #3498db, #2980b9)" },
+      "眼科诊所": { name: "眼科诊所", password: "ykzs123", gradient: "linear-gradient(135deg, #2ecc71, #27ae60)" },
+      "时代旺角店": { name: "时代旺角店", password: "sdwj123", gradient: "linear-gradient(135deg, #9b59b6, #8e4c8e)" },
+      "东山景区店": { name: "东山景区店", password: "dsjq123", gradient: "linear-gradient(135deg, #f39c12, #d35400)" },
+      "春天广场店": { name: "春天广场店", password: "ctgc123", gradient: "linear-gradient(135deg, #1abc9c, #16a085)" },
+      "苏通国际店": { name: "苏通国际店", password: "stgj123", gradient: "linear-gradient(135deg, #d35400, #ba4a00)" },
+      "万达店": { name: "万达店", password: "wd123", gradient: "linear-gradient(135deg, #8e44ad, #7d3c98)" },
+      "愿景国际店": { name: "愿景国际店", password: "yjgj123", gradient: "linear-gradient(135deg, #2980b9, #1f618d)" },
+      "新天地店": { name: "新天地店", password: "xtd123", gradient: "linear-gradient(135deg, #c0392b, #a93226)" },
+      "万联店": { name: "万联店", password: "wl123b", gradient: "linear-gradient(135deg, #f1c40f, #f39c12)" },
+      "罗口门店": { name: "罗口门店", password: "lkmd123", gradient: "linear-gradient(135deg, #2c3e50, #1a252f)" },
+      "白竹湖店": { name: "白竹湖店", password: "bzh123", gradient: "linear-gradient(135deg, #16a085, #138a72)" },
+      "祁阳眼科店": { name: "祁阳眼科店", password: "qyyk123", gradient: "linear-gradient(135deg, #e67e22, #d35400)" }
+    };
+
+    const CUSTOMER_LINKS = {
+      "徐家井店": [
+        { name: "📝 新增客户登记", url: "https://www.kdocs.cn/wo/sl/v1NAdNF", desc: "登记新客户信息" },
+        { name: "📞 当日回访客户", url: "https://www.kdocs.cn/wo/sl/v141QvA8", desc: "安排今日回访计划" },
+        { name: "📋 复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/OqwUEQOC", desc: "管理客户复查记录" }
+      ],
+      "黄古山店": [
+        { name: "📝 新增客户登记", url: "https://www.kdocs.cn/wo/sl/v1PKC2", desc: "登记新客户信息" },
+        { name: "📞 当日回访客户", url: "https://www.kdocs.cn/wo/sl/v1CCE4R", desc: "安排今日回访计划" },
+        { name: "📋 复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/6plLcMnU", desc: "管理客户复查记录" }
+      ],
+      "眼科诊所": [
+        { name: "📝 新增客户登记", url: "https://www.kdocs.cn/wo/sl/v11BB51C", desc: "登记新客户信息" },
+        { name: "📞 当日回访客户", url: "https://www.kdocs.cn/wo/sl/v1lHuBv", desc: "安排今日回访计划" },
+        { name: "📋 复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/Jt0Uzaok", desc: "管理客户复查记录" }
+      ],
+      "时代旺角店": [
+        { name: "📝 新增客户登记", url: "https://www.kdocs.cn/l/cnD1vN2ewxwH", desc: "登记新客户信息" },
+        { name: "📞 当日回访客户", url: "https://www.kdocs.cn/wo/sl/v1UvVo4", desc: "安排今日回访计划" },
+        { name: "📋 复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/F3yfrMLJ", desc: "管理客户复查记录" }
+      ],
+      "东山景区店": [
+        { name: "📝 新增客户登记", url: "https://www.kdocs.cn/l/cuQaE92E4JTb", desc: "登记新客户信息" },
+        { name: "📞 当日回访客户", url: "https://www.kdocs.cn/wo/sl/v14M4G51", desc: "安排今日回访计划" },
+        { name: "📋 复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/Y3voQn8B", desc: "管理客户复查记录" }
+      ],
+      "春天广场店": [
+        { name: "📝 新增客户登记", url: "https://www.kdocs.cn/l/cttPVJlz6wvX", desc: "登记新客户信息" },
+        { name: "📞 当日回访客户", url: "https://www.kdocs.cn/wo/sl/v12jciOV", desc: "安排今日回访计划" },
+        { name: "📋 复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/04UYAPH9", desc: "管理客户复查记录" }
+      ],
+      "苏通国际店": [
+        { name: "📝 新增客户登记", url: "https://www.kdocs.cn/wo/sl/v1WnUUM", desc: "登记新客户信息" },
+        { name: "📞 当日回访客户", url: "https://www.kdocs.cn/wo/sl/v14NS4y2", desc: "安排今日回访计划" },
+        { name: "📋 复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/kmYQlhnH", desc: "管理客户复查记录" }
+      ],
+      "万达店": [
+        { name: "📝 新增客户登记", url: "https://www.kdocs.cn/wo/sl/v14T9Pyw", desc: "登记新客户信息" },
+        { name: "📞 当日回访客户", url: "https://www.kdocs.cn/wo/sl/v15L1mS", desc: "安排今日回访计划" },
+        { name: "📋 复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/jWwg9dDi", desc: "管理客户复查记录" }
+      ],
+      "愿景国际店": [
+        { name: "📝 新增客户登记", url: "https://www.kdocs.cn/wo/sl/v12vJw5z", desc: "登记新客户信息" },
+        { name: "📞 当日回访客户", url: "https://www.kdocs.cn/wo/sl/v121KRe3", desc: "安排今日回访计划" },
+        { name: "📋 复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/QZFcAnu7", desc: "管理客户复查记录" }
+      ],
+      "新天地店": [
+        { name: "📝 新增客户登记", url: "https://www.kdocs.cn/wo/sl/v12zQIdM", desc: "登记新客户信息" },
+        { name: "📞 当日回访客户", url: "https://www.kdocs.cn/wo/sl/v11BemYj", desc: "安排今日回访计划" },
+        { name: "📋 复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/qdSX43oX", desc: "管理客户复查记录" }
+      ],
+      "万联店": [
+        { name: "📝 新增客户登记", url: "https://www.kdocs.cn/wo/sl/v12msbCv", desc: "登记新客户信息" },
+        { name: "📞 当日回访客户", url: "https://www.kdocs.cn/wo/sl/v13Rx5IH", desc: "安排今日回访计划" },
+        { name: "📋 复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/blubZh3e", desc: "管理客户复查记录" }
+      ],
+      "罗口门店": [
+        { name: "📝 新增客户登记", url: "https://www.kdocs.cn/wo/sl/v1RKC2L", desc: "登记新客户信息" },
+        { name: "📞 当日回访客户", url: "https://www.kdocs.cn/wo/sl/v130xxzy", desc: "安排今日回访计划" },
+        { name: "📋 复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/npREjTc4", desc: "管理客户复查记录" }
+      ],
+      "白竹湖店": [
+        { name: "📝 新增客户登记", url: "https://www.kdocs.cn/wo/sl/v13UjoGr", desc: "登记新客户信息" },
+        { name: "📞 当日回访客户", url: "https://www.kdocs.cn/wo/sl/v11N8yOp", desc: "安排今日回访计划" },
+        { name: "📋 复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/zAXn08IF", desc: "管理客户复查记录" }
+      ],
+      "祁阳眼科店": [
+        { name: "📝 新增客户登记", url: "https://www.kdocs.cn/wo/sl/v11ozRE6", desc: "登记新客户信息" },
+        { name: "📞 当日回访客户", url: "https://www.kdocs.cn/wo/sl/v1449R6E", desc: "安排今日回访计划" },
+        { name: "📋 复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/eQoLfNHB", desc: "管理客户复查记录" }
+      ]
+    };
+
+    // 隐藏所有内容
+    function hideAllContent() {
+      document.getElementById('welcomeContent').classList.add('hidden');
+      document.getElementById('customerManagement').classList.add('hidden');
+    }
+
+    // 显示欢迎页
+    function showWelcome() {
+      hideAllContent();
+      document.getElementById('welcomeContent').classList.remove('hidden');
+    }
+
+    // 客户管理相关函数
+    function showCustomerManagement() {
+      hideAllContent();
+      document.getElementById('customerManagement').classList.remove('hidden');
+      initCustomerManagement();
+    }
+
+    function initCustomerManagement() {
+      const savedKey = localStorage.getItem('selectedStoreKey');
+      if (savedKey && CUSTOMER_STORES[savedKey]) {
+        // 如果已经保存了门店选择，直接进入主页面
+        showMainPage(savedKey);
+      } else {
+        renderStoreSelect();
+      }
+    }
+
+    function renderStoreSelect() {
+      const grid = document.getElementById('storeGrid');
+      if (!grid) return;
+      
+      grid.innerHTML = '';
+      
+      Object.values(CUSTOMER_STORES).forEach(store => {
+        const storeId = store.name;
+        
+        if (store) {
+          const btn = document.createElement('button');
+          btn.className = 'store-btn';
+          btn.textContent = store.name;
+          
+          btn.style.background = store.gradient;
+          
+          const counterSpan = document.createElement('span');
+          counterSpan.className = 'click-counter';
+          counterSpan.id = `customerManagement_${storeId}_counter`;
+          btn.appendChild(counterSpan);
+          
+          btn.onclick = () => handleStoreClick(storeId, btn);
+          grid.appendChild(btn);
+        }
+      });
+    }
+
+    // 处理门店点击事件
+    function handleStoreClick(storeId, buttonElement) {
+      const counters = storeClickCounters.customerManagement;
+      
+      if (!counters[storeId]) {
+        counters[storeId] = { count: 0, lastClickTime: 0 };
+      }
+      
+      const now = Date.now();
+      const counter = counters[storeId];
+      
+      if (now - counter.lastClickTime > 3000) {
+        counter.count = 0;
+        updateCounterDisplay(storeId, 0);
+      }
+      
+      counter.count++;
+      counter.lastClickTime = now;
+      
+      updateCounterDisplay(storeId, counter.count);
+      
+      if (counter.count >= 5) {
+        counter.count = 0;
+        updateCounterDisplay(storeId, 0);
+        
+        currentClearStore.module = 'customerManagement';
+        currentClearStore.storeId = storeId;
+        
+        showAdminModal(storeId);
+      } else {
+        selectStore(storeId);
+      }
+    }
+
+    // 更新计数器显示
+    function updateCounterDisplay(storeId, count) {
+      const counterElement = document.getElementById(`customerManagement_${storeId}_counter`);
+      if (counterElement) {
+        if (count > 0) {
+          counterElement.textContent = count;
+          counterElement.classList.add('show');
+        } else {
+          counterElement.classList.remove('show');
+        }
+      }
+    }
+
+    // 显示管理员验证弹窗
+    function showAdminModal(storeId) {
+      document.getElementById('adminPasswordInput').value = '';
+      document.getElementById('adminErrorMsg').textContent = '';
+      document.getElementById('adminModal').classList.remove('hidden');
+    }
+
+    // 关闭管理员验证弹窗
+    function closeAdminModal() {
+      document.getElementById('adminModal').classList.add('hidden');
+      currentClearStore.module = null;
+      currentClearStore.storeId = null;
+    }
+
+    // 验证管理员密码
+    function verifyAdminPassword() {
+      const input = document.getElementById('adminPasswordInput').value.trim();
+      const error = document.getElementById('adminErrorMsg');
+      
+      if (!input) {
+        error.textContent = "请输入管理员密码";
+        return;
+      }
+      
+      if (input === ADMIN_PASSWORD) {
+        clearStoreSelection();
+        closeAdminModal();
+        alert('门店选择已成功清除！');
+      } else {
+        error.textContent = "管理员密码错误";
+        document.getElementById('adminPasswordInput').value = '';
+        setTimeout(() => error.textContent = '', 2500);
+      }
+    }
+
+    // 清除门店选择
+    function clearStoreSelection() {
+      if (currentClearStore.module && currentClearStore.storeId) {
+        if (currentClearStore.module === 'customerManagement') {
+          localStorage.removeItem('selectedStoreKey');
+          localStorage.removeItem('storeLocked');
+          renderStoreSelect();
+        }
+      }
+    }
+
+    function selectStore(storeId) {
+      localStorage.setItem('selectedStoreKey', storeId);
+      showLoginPage(storeId, true);
+    }
+
+    function showLoginPage(storeId, showBack = true) {
+      const store = CUSTOMER_STORES[storeId];
+      if (!store) return;
+      
+      const header = document.getElementById('loginHeader');
+      header.style.background = store.gradient;
+      document.getElementById('loginTitle').textContent = `🔒 ${store.name} 客户管理系统`;
+
+      document.getElementById('storeSelectPage').classList.add('hidden');
+      document.getElementById('loginPage').classList.remove('hidden');
+      document.getElementById('mainPage').classList.add('hidden');
+
+      document.getElementById('backLink').classList.toggle('hidden', !showBack);
+      document.getElementById('passwordInput').value = '';
+      document.getElementById('passwordInput').focus();
+      
+      // 绑定回车键登录
+      document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          checkPassword();
+        }
+      });
+    }
+
+    function checkPassword() {
+      const storeId = localStorage.getItem('selectedStoreKey');
+      const store = CUSTOMER_STORES[storeId];
+      if (!store) {
+        document.getElementById('errorMsg').textContent = "门店配置错误";
+        return;
+      }
+      
+      const input = document.getElementById('passwordInput').value.trim();
+      const error = document.getElementById('errorMsg');
+
+      if (!input) {
+        error.textContent = "请输入密码";
+        return;
+      }
+
+      if (input === store.password) {
+        // 密码验证成功后，保存门店选择并进入主页面
+        localStorage.setItem('selectedStoreKey', storeId);
+        localStorage.setItem('storeLocked', 'true');
+        showMainPage(storeId);
+      } else {
+        error.textContent = "密码错误，请重试";
+        document.getElementById('passwordInput').value = '';
+        setTimeout(() => error.textContent = '', 2500);
+      }
+    }
+
+    function showMainPage(storeId) {
+      const store = CUSTOMER_STORES[storeId];
+      if (!store) return;
+      
+      const header = document.getElementById('mainHeader');
+      header.style.background = store.gradient;
+      document.getElementById('mainTitle').textContent = `${store.name} 客户管理系统`;
+
+      const linkContainer = document.getElementById('functionGrid');
+      linkContainer.innerHTML = '';
+      const links = CUSTOMER_LINKS[storeId];
+      if (!links) return;
+      
+      links.forEach((link, index) => {
+        const card = document.createElement('a');
+        card.className = 'function-card';
+        card.href = link.url;
+        card.target = '_blank';
+        
+        const iconDiv = document.createElement('div');
+        iconDiv.className = 'function-icon';
+        iconDiv.innerHTML = link.name.substring(0, 2);
+        
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'function-title';
+        titleDiv.textContent = link.name.substring(3);
+        
+        const descDiv = document.createElement('div');
+        descDiv.className = 'function-desc';
+        descDiv.textContent = link.desc;
+        
+        card.appendChild(iconDiv);
+        card.appendChild(titleDiv);
+        card.appendChild(descDiv);
+        
+        linkContainer.appendChild(card);
+      });
+
+      // 设置已保存的门店选择
+      localStorage.setItem('selectedStoreKey', storeId);
+      localStorage.setItem('storeLocked', 'true');
+
+      document.getElementById('storeSelectPage').classList.add('hidden');
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('mainPage').classList.remove('hidden');
+    }
+
+    function goBackToStoreSelect() {
+      localStorage.removeItem('selectedStoreKey');
+      localStorage.removeItem('storeLocked');
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('mainPage').classList.add('hidden');
+      document.getElementById('storeSelectPage').classList.remove('hidden');
+      renderStoreSelect();
+    }
+
+    // 其他功能函数
+    function toggleFullScreen() {
+      const elem = document.documentElement;
+      if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement) {
+        if (elem.requestFullscreen) elem.requestFullscreen();
+        else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+        else if (elem.mozRequestFullScreen) elem.mozRequestFullScreen();
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+      }
+    }
+
+    // 桌面优化功能
+    function showDesktopOptimization() {
+      document.getElementById('desktopOptimization').style.display = 'block';
+    }
+
+    function closeDesktopOptimization() {
+      document.getElementById('desktopOptimization').style.display = 'none';
+    }
+
+    // 键盘事件监听
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter' && 
+          !document.getElementById('customerManagement').classList.contains('hidden') &&
+          !document.getElementById('loginPage').classList.contains('hidden')) {
+        checkPassword();
+      }
+    });
+
+    // 初始显示欢迎页
+    showWelcome();
+    
+    // 显示桌面优化提示（只在桌面端显示）
+    window.addEventListener('load', function() {
+      // 检测是否为桌面端
+      if (window.innerWidth > 768) {
+        // 延迟显示桌面优化提示
+        setTimeout(showDesktopOptimization, 3000);
+      }
+    });
+    
+    // 页面加载完成后初始化客户管理系统
+    window.addEventListener('load', function() {
+      showCustomerManagement();
+    });
+  </script>
+</body>
+</html>
