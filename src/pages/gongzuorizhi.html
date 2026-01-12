@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>工作日志系统</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *:not(input):not(textarea) { user-select: none; }
+    
+    body {
+      font-family: "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+      min-height: 100vh;
+      width: 100vw;
+      overflow-x: hidden;
+    }
+    
+    .container {
+      width: 100%;
+      min-height: 100vh;
+      background: white;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* 移除header样式，隐藏顶部标题栏 */
+    .header {
+      display: none;
+    }
+    
+    .content-area {
+      flex: 1;
+      position: relative;
+      background: #fff;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+      flex: 1;
+      /* 允许iframe内的文档编辑 */
+      pointer-events: auto;
+    }
+    
+    .log-container { 
+      flex: 1; 
+      width: 100%; 
+      text-align: center; 
+      padding: 30px 20px; 
+      overflow-y: auto; 
+    }
+    
+    .log-title { 
+      color: #2c3e50; 
+      margin-bottom: 30px; 
+      font-size: clamp(24px, 4vw, 32px); 
+    }
+    
+    .store-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 18px;
+      padding: 20px;
+      width: 100%;
+    }
+    
+    .store-btn {
+      padding: 18px 10px;
+      border-radius: 18px;
+      font-weight: 600;
+      font-size: 15px;
+      color: white;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: all 0.25s ease;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .store-btn:hover { 
+      transform: translateY(-3px); 
+      box-shadow: 0 6px 14px rgba(0,0,0,0.18); 
+    }
+    
+    .click-counter {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(255, 255, 255, 0.3);
+      color: white;
+      font-size: 10px;
+      padding: 2px 5px;
+      border-radius: 10px;
+      font-weight: bold;
+      display: none;
+    }
+    
+    .click-counter.show { display: block; }
+    
+    .month-buttons { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+      gap: 18px; 
+      margin-top: 20px; 
+    }
+    
+    .month-btn {
+      padding: 16px 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: white;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .month-btn:hover { 
+      transform: translateY(-5px) scale(1.03); 
+      box-shadow: 0 6px 14px rgba(0,0,0,0.25); 
+    }
+    
+    /* 新增：编辑提示样式 */
+    .edit-tip {
+      color: #3498db;
+      font-size: 14px;
+      margin: 10px 0;
+      font-weight: 500;
+    }
+    
+    .password-modal, .admin-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    
+    .admin-modal { 
+      background: rgba(0,0,0,0.7); 
+      z-index: 2000; 
+    }
+    
+    .modal-content, .admin-modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      max-width: 400px;
+      width: 90%;
+    }
+    
+    .admin-modal-content { text-align: center; }
+    
+    .modal-buttons, .admin-modal-buttons { 
+      display: flex; 
+      justify-content: space-between; 
+      margin-top: 20px; 
+    }
+    
+    .modal-btn, .admin-modal-btn { 
+      padding: 10px 20px; 
+      border: none; 
+      border-radius: 6px; 
+      font-weight: bold; 
+      cursor: pointer; 
+      font-size: 16px; 
+    }
+    
+    .confirm-btn { background-color: #2ecc71; color: white; }
+    .cancel-btn { background-color: #e74c3c; color: white; }
+    .admin-confirm-btn { background-color: #3498db; color: white; }
+    .admin-cancel-btn { background-color: #95a5a6; color: white; }
+    
+    .error {
+      color: #e53935;
+      text-align: center;
+      margin-top: 10px;
+      min-height: 20px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    input[type="password"] {
+      width: 100%;
+      padding: 16px 20px;
+      border: 2px solid #e6e6e6;
+      border-radius: 12px;
+      font-size: 16px;
+      outline: none;
+      transition: all 0.3s ease;
+      background: #fafafa;
+      font-family: "Microsoft YaHei", sans-serif;
+      margin-top: 10px;
+    }
+    
+    input:focus {
+      border-color: #4a90e2;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
+    }
+    
+    .control-panel { 
+      padding: 12px 20px; 
+      background: #f8f9fa; 
+      border-top: 1px solid #eee; 
+      text-align: right; 
+    }
+    
+    .control-btn { 
+      padding: 8px 14px; 
+      font-size: 13px; 
+      margin-left: 8px; 
+      background: #7f8c8d; 
+      color: white; 
+      border: none; 
+      border-radius: 6px; 
+      cursor: pointer; 
+    }
+    
+    .control-btn:hover { background: #95a5a6; }
+    
+    .hidden { display: none !important; }
+
+    @media (max-width: 768px) {
+      .log-container { padding: 20px 15px; }
+      .store-grid { 
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
+        gap: 12px; 
+        padding: 15px; 
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .store-grid { grid-template-columns: repeat(2, 1fr); }
+      .month-buttons { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 移除顶部标题栏的内容，通过样式隐藏整个header -->
+    <div class="header"></div>
+
+    <div class="content-area">
+      <!-- 工作日志内容 -->
+      <div id="workLog" class="log-container">
+        <h1 class="log-title" id="logTitle">2026年工作日志</h1>
+        <div id="logStoreSelection" class="store-grid"></div>
+        <div id="monthSelection" class="hidden">
+          <p style="font-size:18px; color:#555; margin:20px 0;">请选择月份</p>
+          <!-- 新增编辑提示 -->
+          <p class="edit-tip">💡 点击月份后可直接在页面内查看和编辑日志文档</p>
+          <div class="month-buttons" id="monthButtons"></div>
+        </div>
+      </div>
+
+      <!-- 通用iframe -->
+      <iframe id="mainFrame" src="about:blank" title="工作日志工作区" class="hidden" 
+        sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation"></iframe>
+
+      <!-- 门店密码验证弹窗 -->
+      <div id="passwordModal" class="password-modal hidden">
+        <div class="modal-content">
+          <h2 id="modalTitle">请输入密码</h2>
+          <input type="password" id="logPasswordInput" placeholder="输入门店密码" autocomplete="off" />
+          <div class="error" id="logErrorMessage"></div>
+          <div class="modal-buttons">
+            <button class="modal-btn cancel-btn" onclick="closeLogModal()">取消</button>
+            <button class="modal-btn confirm-btn" onclick="verifyLogPassword()">确认</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 管理密码验证弹窗 -->
+      <div id="adminModal" class="admin-modal hidden">
+        <div class="admin-modal-content">
+          <h2>🔐 管理员验证</h2>
+          <p>请输入管理员密码以清除门店选择</p>
+          <input type="password" id="adminPasswordInput" placeholder="输入管理员密码" autocomplete="off" />
+          <div class="error" id="admin123456"></div>
+          <div class="admin-modal-buttons">
+            <button class="admin-modal-btn admin-cancel-btn" onclick="closeAdminModal()">取消</button>
+            <button class="admin-modal-btn admin-confirm-btn" onclick="verifyAdminPassword()">确认</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="control-panel">
+      <button class="control-btn" onclick="toggleFullScreen()">🖥️ 全屏</button>
+    </div>
+  </div>
+
+  <script>
+    // 防止查看源代码
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'F12' || (e.ctrlKey && e.key === 'u') || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      return false;
+    });
+
+    document.onkeydown = function(e) {
+      if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73) || 
+          (e.ctrlKey && e.shiftKey && e.keyCode == 74) || (e.ctrlKey && e.keyCode == 85)) {
+        return false;
+      }
+    };
+
+    // 工作日志配置 - 删除万利店后的门店信息
+    const LOG_STORES = [
+      { id: "徐家井店", name: "徐家井店", color: "#e74c3c", password: "xjj123" },
+      { id: "黄古山店", name: "黄古山店", color: "#3498db", password: "hgs123" },
+      { id: "眼科诊所", name: "眼科诊所", color: "#2ecc71", password: "ykzs123" },
+      { id: "时代旺角店", name: "时代旺角店", color: "#9b59b6", password: "sdwj123" },
+      { id: "东山景区店", name: "东山景区店", color: "#f39c12", password: "dsjq123" },
+      { id: "春天广场店", name: "春天广场店", color: "#1abc9c", password: "ctgc123" },
+      { id: "苏通国际店", name: "苏通国际店", color: "#d35400", password: "stgj123" },
+      { id: "万达店", name: "万达店", color: "#8e44ad", password: "wd123" },
+      { id: "愿景国际店", name: "愿景国际店", color: "#2980b9", password: "yjgj123" },
+      { id: "新天地店", name: "新天地店", color: "#c0392b", password: "xtd123" },
+      { id: "万联店", name: "万联店", color: "#f1c40f", password: "wl123b" },
+      { id: "罗口门店", name: "罗口门店", color: "#2c3e50", password: "lkmd123" },
+      { id: "白竹湖店", name: "白竹湖店", color: "#16a085", password: "bzh123" },
+      { id: "祁阳眼科店", name: "祁阳眼科店", color: "#e67e22", password: "qyyk123" }
+    ];
+
+    // 月份配置 - 删除万利店链接，保留其他门店的月份链接
+    const LOG_MONTHS = [
+      { id: 1, name: "1月", color: "#ff9999", links: {
+        "徐家井店": "https://www.kdocs.cn/l/curAkfJjLQgY",
+        "黄古山店": "https://www.kdocs.cn/l/ckXTaxhe4MDC",
+        "眼科诊所": "https://www.kdocs.cn/l/coMLZnvYyuuw",
+        "时代旺角店": "https://www.kdocs.cn/l/cowc1ZO41V8X",
+        "东山景区店": "https://www.kdocs.cn/l/cbnYjj1Fj1EX",
+        "春天广场店": "https://www.kdocs.cn/l/cfF9RFxZxMKP",
+        "苏通国际店": "https://www.kdocs.cn/l/cgNih5dQ3qvx",
+        "万达店": "https://www.kdocs.cn/l/clpTsGkl3ljn",
+        "愿景国际店": "https://www.kdocs.cn/l/cgaUeEvuzhje",
+        "新天地店": "https://www.kdocs.cn/l/csmqr3eYkeC1",
+        "万联店": "https://www.kdocs.cn/l/cnHRg5Twu5Q3",
+        "罗口门店": "https://www.kdocs.cn/l/cofRLEEyI8gA",
+        "白竹湖店": "https://www.kdocs.cn/l/caMCVMqXBmON",
+        "祁阳眼科店": "https://www.kdocs.cn/l/cisWQWmIUnBD"
+      }},
+      { id: 2, name: "2月", color: "#66b3ff", links: {
+        "徐家井店": "https://www.kdocs.cn/l/cgiXh3P00xDE",
+        "黄古山店": "https://www.kdocs.cn/l/cqKetmzx0w6h",
+        "眼科诊所": "https://www.kdocs.cn/l/cmrn6ITRgwzu",
+        "时代旺角店": "https://www.kdocs.cn/l/ccJyT524O1Pl",
+        "东山景区店": "https://www.kdocs.cn/l/ckxV7wREMfo7",
+        "春天广场店": "https://www.kdocs.cn/l/cjUB0CvrCUEU",
+        "苏通国际店": "https://www.kdocs.cn/l/cgM1AgePytng",
+        "万达店": "https://www.kdocs.cn/l/cg190i7yWshW",
+        "愿景国际店": "https://www.kdocs.cn/l/ciJRiQGEgytC",
+        "新天地店": "https://www.kdocs.cn/l/coEj4XHgqXrH",
+        "万联店": "https://www.kdocs.cn/l/cka4ldCwEN7W",
+        "罗口门店": "https://www.kdocs.cn/l/chiaLoNQHTMv",
+        "白竹湖店": "https://www.kdocs.cn/l/csgtIqVRfa8m",
+        "祁阳眼科店": "https://www.kdocs.cn/l/cqcRsHwrsoQe"
+      }},
+      { id: 3, name: "3月", color: "#99ff99", links: {
+        "徐家井店": "https://www.kdocs.cn/l/cbuHykWgCGGc",
+        "黄古山店": "https://www.kdocs.cn/l/cg5eIsttyYIq",
+        "眼科诊所": "https://www.kdocs.cn/l/ckmTULVcfqeA",
+        "时代旺角店": "https://www.kdocs.cn/l/cb0JI2IECQgu",
+        "东山景区店": "https://www.kdocs.cn/l/caEn0ymn0Hdy",
+        "春天广场店": "https://www.kdocs.cn/l/cuwIxi0m1of1",
+        "苏通国际店": "https://www.kdocs.cn/l/cnF6Jm1faiB4",
+        "万达店": "https://www.kdocs.cn/l/cjhmrYc29BcY",
+        "愿景国际店": "https://www.kdocs.cn/l/ctC5sNFsSxWm",
+        "新天地店": "https://www.kdocs.cn/l/cs8W32sOIs7o",
+        "万联店": "https://www.kdocs.cn/l/cka4ldCwEN7W",
+        "罗口门店": "https://www.kdocs.cn/l/ckt9fnoEAXzV",
+        "白竹湖店": "https://www.kdocs.cn/l/ccgNVnshSZU3",
+        "祁阳眼科店": "https://www.kdocs.cn/l/cljq82VkL2Jc"
+      }},
+      { id: 4, name: "4月", color: "#ffcc99", links: {
+        "徐家井店": "https://www.kdocs.cn/l/cchnMD1Ok7An",
+        "黄古山店": "https://www.kdocs.cn/l/cj1oFtD6zEc7",
+        "眼科诊所": "https://www.kdocs.cn/l/ceu6OFXJK9sl",
+        "时代旺角店": "https://www.kdocs.cn/l/cufE05ZE9iaS",
+        "东山景区店": "https://www.kdocs.cn/l/cfNMnGRPdvBG",
+        "春天广场店": "https://www.kdocs.cn/l/ckxV8ygUB7AI",
+        "苏通国际店": "https://www.kdocs.cn/l/cutIY2Eo37Lz",
+        "万达店": "https://www.kdocs.cn/l/cs5v2m518bNQ",
+        "愿景国际店": "https://www.kdocs.cn/l/cbnDJknpnxdv",
+        "新天地店": "https://www.kdocs.cn/l/cum7HhbrFtub",
+        "万联店": "https://www.kdocs.cn/l/ctRnvpyevw8g",
+        "罗口门店": "https://www.kdocs.cn/l/cm3tm0BIJMr3",
+        "白竹湖店": "https://www.kdocs.cn/l/chBy9DWrDh5Q",
+        "祁阳眼科店": "https://www.kdocs.cn/l/chbJ9d67bJPG"
+      }},
+      { id: 5, name: "5月", color: "#ff99cc", links: {
+        "徐家井店": "https://www.kdocs.cn/l/cvhiuNWgN9J9",
+        "黄古山店": "https://www.kdocs.cn/l/cpXYJR4GUjoB",
+        "眼科诊所": "https://www.kdocs.cn/l/cldYwihYYovg",
+        "时代旺角店": "https://www.kdocs.cn/l/cj0ww1FixTrt",
+        "东山景区店": "https://www.kdocs.cn/l/cdOR2c8wFNtC",
+        "春天广场店": "https://www.kdocs.cn/l/cbs0ZZfZXZZk",
+        "苏通国际店": "https://www.kdocs.cn/l/cun188ToU2fB",
+        "万达店": "https://www.kdocs.cn/l/ccUzw05P8mzL",
+        "愿景国际店": "https://www.kdocs.cn/l/cdnMmNhd4xl3",
+        "新天地店": "https://www.kdocs.cn/l/csmRq2AojJAg",
+        "万联店": "https://www.kdocs.cn/l/clCfZ48g2ZnL",
+        "罗口门店": "https://www.kdocs.cn/l/cguLmW4GX1AE",
+        "白竹湖店": "https://www.kdocs.cn/l/cldYwihYYovg",
+        "祁阳眼科店": "https://www.kdocs.cn/l/caUi3xKKmRLH"
+      }},
+      { id: 6, name: "6月", color: "#c2c2f0", links: {
+        "徐家井店": "https://www.kdocs.cn/l/cigKUxJEJlpi",
+        "黄古山店": "https://www.kdocs.cn/l/cnuti4hulygT",
+        "眼科诊所": "https://www.kdocs.cn/l/cstJtVepjVxN",
+        "时代旺角店": "https://www.kdocs.cn/l/caGhg8kV8pbq",
+        "东山景区店": "https://www.kdocs.cn/l/ctLFcA6VSlii",
+        "春天广场店": "https://www.kdocs.cn/l/chjsdCQJrrOy",
+        "苏通国际店": "https://www.kdocs.cn/l/ckFxWZ2pSurq",
+        "万达店": "https://www.kdocs.cn/l/caCG5wux6zlF",
+        "愿景国际店": "https://www.kdocs.cn/l/cpq0hyDWLc9n",
+        "新天地店": "https://www.kdocs.cn/l/cjbLwlLjraj8",
+        "万联店": "https://www.kdocs.cn/l/cbN6xfORrrSi",
+        "罗口门店": "https://www.kdocs.cn/l/ct6Q4GcqhDuB",
+        "白竹湖店": "https://www.kdocs.cn/l/cpzhmdEshY65",
+        "祁阳眼科店": "https://www.kdocs.cn/l/cnnipHy8NlPO"
+      }},
+      { id: 7, name: "7月", color: "#ffb3e6", links: {
+        "徐家井店": "https://www.kdocs.cn/l/cp9PpU1vqp7J",
+        "黄古山店": "https://www.kdocs.cn/l/cbTFHf6oAjsu",
+        "眼科诊所": "https://www.kdocs.cn/l/caVYzOh2Mb9Z",
+        "时代旺角店": "https://www.kdocs.cn/l/cgXQGLzroIaT",
+        "东山景区店": "https://www.kdocs.cn/l/cebp4gkqWW3p",
+        "春天广场店": "https://www.kdocs.cn/l/cj2c4ctq0Zz9",
+        "苏通国际店": "https://www.kdocs.cn/l/cu6oAcozg8n0",
+        "万达店": "https://www.kdocs.cn/l/cqRgytJFmEV1",
+        "愿景国际店": "https://www.kdocs.cn/l/csY3IiRWPzpR",
+        "新天地店": "https://www.kdocs.cn/l/caXes2iTDDCu",
+        "万联店": "https://www.kdocs.cn/l/cuxuJO1L4ISe",
+        "罗口门店": "https://www.kdocs.cn/l/coqSi8g4uzkG",
+        "白竹湖店": "https://www.kdocs.cn/l/cfGQgxSgmNaY",
+        "祁阳眼科店": "https://www.kdocs.cn/l/ce8HT9B7do2v"
+      }},
+      { id: 8, name: "8月", color: "#c4e17f", links: {
+        "徐家井店": "https://www.kdocs.cn/l/chS5QIE3CXPA",
+        "黄古山店": "https://www.kdocs.cn/l/cdoxm4sD2juc",
+        "眼科诊所": "https://www.kdocs.cn/l/ctTZJExcocN6",
+        "时代旺角店": "https://www.kdocs.cn/l/chYU6bVimbdl",
+        "东山景区店": "https://www.kdocs.cn/l/cs4qd4uCrAsh",
+        "春天广场店": "https://www.kdocs.cn/l/ciNDsSC2jBU5",
+        "苏通国际店": "https://www.kdocs.cn/l/coBVtiOTgCIv",
+        "万达店": "https://www.kdocs.cn/l/cqIzGO9ng2SD",
+        "愿景国际店": "https://www.kdocs.cn/l/cnRCeh2t4AmT",
+        "新天地店": "https://www.kdocs.cn/l/cdQOYtaxk1QG",
+        "万联店": "https://www.kdocs.cn/l/csyJmz9H8imV",
+        "罗口门店": "https://www.kdocs.cn/l/crWcEACS4yJU",
+        "白竹湖店": "https://www.kdocs.cn/l/cswEcgqeIK23",
+        "祁阳眼科店": "https://www.kdocs.cn/l/cohCdQdIhDiq"
+      }},
+      { id: 9, name: "9月", color: "#f78fb3", links: {
+        "徐家井店": "https://www.kdocs.cn/l/cpW1ZYbaGpCl",
+        "黄古山店": "https://www.kdocs.cn/l/ckCtYqNKnCGf",
+        "眼科诊所": "https://www.kdocs.cn/l/cqCFqOhaPJAv",
+        "时代旺角店": "https://www.kdocs.cn/l/csON4Vh7RhbB",
+        "东山景区店": "https://www.kdocs.cn/l/cgWfAbaMY0ux",
+        "春天广场店": "https://www.kdocs.cn/l/cvVtAg8mMcxp",
+        "苏通国际店": "https://www.kdocs.cn/l/cuDwPdOpx0Rl",
+        "万达店": "https://www.kdocs.cn/l/cajLDCpXmQi2",
+        "愿景国际店": "https://www.kdocs.cn/l/cfvnX5Bu7pT7",
+        "新天地店": "https://www.kdocs.cn/l/crrQRihKdXwH",
+        "万联店": "https://www.kdocs.cn/l/ck2c1FI9SO6b",
+        "罗口门店": "https://www.kdocs.cn/l/cqbo0ppsXPzi",
+        "白竹湖店": "https://www.kdocs.cn/l/cjcRvQrZeFB5",
+        "祁阳眼科店": "https://www.kdocs.cn/l/cvz341Rr85xr"
+      }},
+      { id: 10, name: "10月", color: "#a3d5f7", links: {
+        "徐家井店": "https://www.kdocs.cn/l/ckbMfCJhwPul",
+        "黄古山店": "https://www.kdocs.cn/l/cmYAvYDDGGj8",
+        "眼科诊所": "https://www.kdocs.cn/l/crHxqr97MYFF",
+        "时代旺角店": "https://www.kdocs.cn/l/compfdu5qsH1",
+        "东山景区店": "https://www.kdocs.cn/l/cgZPNSO3J4cV",
+        "春天广场店": "https://www.kdocs.cn/l/chOwzEPWCKhE",
+        "苏通国际店": "https://www.kdocs.cn/l/cche8vgVmI9x",
+        "万达店": "https://www.kdocs.cn/l/cmGQrr5Ld1gt",
+        "愿景国际店": "https://www.kdocs.cn/l/cjTM7oSBpMJp",
+        "新天地店": "https://www.kdocs.cn/l/clCd0kWLB62o",
+        "万联店": "https://www.kdocs.cn/l/ckNN9BGVIBCA",
+        "罗口门店": "https://www.kdocs.cn/l/ciGozdRjVYmg",
+        "白竹湖店": "https://www.kdocs.cn/l/clRvrom1Hcl5",
+        "祁阳眼科店": "https://www.kdocs.cn/l/ciFwgQwyXwyX"
+      }},
+      { id: 11, name: "11月", color: "#d1c4e9", links: {
+        "徐家井店": "https://www.kdocs.cn/l/cmCGmFmNckoi",
+        "黄古山店": "https://www.kdocs.cn/l/cmBojNFzcpGe",
+        "眼科诊所": "https://www.kdocs.cn/l/cj7kQuoV3vGt",
+        "时代旺角店": "https://www.kdocs.cn/l/ch4nw6Xallgo",
+        "东山景区店": "https://www.kdocs.cn/l/cbX6uBDLV89Z",
+        "春天广场店": "https://www.kdocs.cn/l/cfSABHD3XMPy",
+        "苏通国际店": "https://www.kdocs.cn/l/csXjL1rXYj7c",
+        "万达店": "https://www.kdocs.cn/l/cpgwDgumKbJj",
+        "愿景国际店": "https://www.kdocs.cn/l/ch0HbrMdhNX2",
+        "新天地店": "https://www.kdocs.cn/l/craqVbgBLQwK",
+        "万联店": "https://www.kdocs.cn/l/cqOQEj6JbKO8",
+        "罗口门店": "https://www.kdocs.cn/l/cvDWAJcyqgy2",
+        "白竹湖店": "https://www.kdocs.cn/l/coI3YnsGoDcp",
+        "祁阳眼科店": "https://www.kdocs.cn/l/cinnl0LIxoII"
+      }},
+      { id: 12, name: "12月", color: "#b3e0ff", links: {
+        "徐家井店": "https://www.kdocs.cn/l/cnx5VcHnOIED",
+        "黄古山店": "https://www.kdocs.cn/l/ca36a1qZHBQn",
+        "眼科诊所": "https://www.kdocs.cn/l/cbyK63QwJD0g",
+        "时代旺角店": "https://www.kdocs.cn/l/cceMJw3SweuA",
+        "东山景区店": "https://www.kdocs.cn/l/coAzdaMpkXGU",
+        "春天广场店": "https://www.kdocs.cn/l/csn66DQ1QWU2",
+        "苏通国际店": "https://www.kdocs.cn/l/cgp3Ebhnm7Ni",
+        "万达店": "https://www.kdocs.cn/l/caNMsFvzEbhP",
+        "愿景国际店": "https://www.kdocs.cn/l/cfdQeGdCODyv",
+        "新天地店": "https://www.kdocs.cn/l/cpOKWJzwrm45",
+        "万联店": "https://www.kdocs.cn/l/cg3S6QDwj4hK",
+        "罗口门店": "https://www.kdocs.cn/l/cmqDeVtaKGQi",
+        "白竹湖店": "https://www.kdocs.cn/l/cgRCr1Gchlbu",
+        "祁阳眼科店": "https://www.kdocs.cn/l/cce5lX0xc8w5"
+      }}
+    ];
+    
+    // 管理员密码
+    const ADMIN_PASSWORD = "admin123456";
+    
+    // 点击计数器
+    const storeClickCounters = {
+      workLog: {}
+    };
+    
+    let selectedStore = null;
+    let currentYear = new Date().getFullYear();
+    
+    // 初始化工作日志
+    function initWorkLog() {
+      document.getElementById('logTitle').textContent = `${currentYear}年工作日志`;
+      renderStoreSelection();
+      
+      // 检查本地存储中是否有已选择的门店
+      const savedStore = localStorage.getItem('selectedWorkLogStore');
+      if (savedStore) {
+        const storeData = JSON.parse(savedStore);
+        // 检查门店是否存在
+        const storeExists = LOG_STORES.some(store => store.id === storeData.name);
+        if (storeExists) {
+          selectedStore = storeData.name;
+          showMonthSelection(storeData.name);
+        }
+      }
+    }
+    
+    // 渲染门店选择
+    function renderStoreSelection() {
+      const container = document.getElementById('logStoreSelection');
+      container.innerHTML = '';
+      
+      LOG_STORES.forEach(store => {
+        const button = document.createElement('button');
+        button.className = 'store-btn';
+        // 使用门店指定的颜色创建渐变背景
+        button.style.background = `linear-gradient(135deg, ${store.color}, ${darkenColor(store.color, 0.2)})`;
+        button.innerHTML = `
+          ${store.name}
+          <span class="click-counter ${storeClickCounters.workLog[store.id] > 0 ? 'show' : ''}" id="counter-worklog-${store.id}">
+            ${storeClickCounters.workLog[store.id] || 0}
+          </span>
+        `;
+        
+        button.addEventListener('click', () => {
+          // 更新点击计数器
+          storeClickCounters.workLog[store.id] = (storeClickCounters.workLog[store.id] || 0) + 1;
+          document.getElementById(`counter-worklog-${store.id}`).textContent = storeClickCounters.workLog[store.id];
+          document.getElementById(`counter-worklog-${store.id}`).classList.add('show');
+          
+          // 检查是否需要密码
+          if (store.password) {
+            document.getElementById('modalTitle').textContent = `请输入${store.name}的密码`;
+            document.getElementById('logPasswordInput').value = '';
+            document.getElementById('logErrorMessage').textContent = '';
+            document.getElementById('passwordModal').classList.remove('hidden');
+            
+            // 存储当前选择的门店
+            selectedStore = store.id;
+          } else {
+            showMonthSelection(store.id);
+          }
+        });
+        
+        container.appendChild(button);
+      });
+    }
+    
+    // 辅助函数：加深颜色（用于创建渐变效果）
+    function darkenColor(color, percent) {
+      // 移除#号
+      color = color.replace(/^#/, '');
+      // 转换为RGB
+      let r = parseInt(color.substr(0, 2), 16);
+      let g = parseInt(color.substr(2, 2), 16);
+      let b = parseInt(color.substr(4, 2), 16);
+      
+      // 加深颜色
+      r = Math.floor(r * (1 - percent));
+      g = Math.floor(g * (1 - percent));
+      b = Math.floor(b * (1 - percent));
+      
+      // 确保值在0-255之间
+      r = Math.max(0, Math.min(255, r));
+      g = Math.max(0, Math.min(255, g));
+      b = Math.max(0, Math.min(255, b));
+      
+      // 转换回十六进制
+      const rr = r.toString(16).padStart(2, '0');
+      const gg = g.toString(16).padStart(2, '0');
+      const bb = b.toString(16).padStart(2, '0');
+      
+      return `#${rr}${gg}${bb}`;
+    }
+    
+    // 显示月份选择
+    function showMonthSelection(storeId) {
+      // 保存选择到本地存储
+      localStorage.setItem('selectedWorkLogStore', JSON.stringify({
+        name: storeId,
+        timestamp: new Date().getTime()
+      }));
+      
+      document.getElementById('logStoreSelection').classList.add('hidden');
+      document.getElementById('monthSelection').classList.remove('hidden');
+      
+      const monthContainer = document.getElementById('monthButtons');
+      monthContainer.innerHTML = '';
+      
+      // 获取当前月份
+      const currentMonth = new Date().getMonth();
+      
+      LOG_MONTHS.forEach((month, index) => {
+        const button = document.createElement('button');
+        button.className = 'month-btn';
+        
+        // 使用月份指定的颜色
+        button.style.background = month.color;
+        
+        // 当前月份高亮显示
+        if (index === currentMonth) {
+          button.style.boxShadow = '0 0 0 3px #2c3e50, 0 4px 8px rgba(0,0,0,0.2)';
+        }
+        
+        button.textContent = month.name;
+        button.addEventListener('click', () => {
+          // 获取该门店对应月份的链接
+          const url = month.links[storeId];
+          loadLogPage(url);
+        });
+        
+        monthContainer.appendChild(button);
+      });
+    }
+    
+    // 加载日志页面（优化编辑体验）
+    function loadLogPage(url) {
+      if (!url) {
+        alert('该月份日志尚未创建');
+        return;
+      }
+      
+      document.getElementById('workLog').classList.add('hidden');
+      const frame = document.getElementById('mainFrame');
+      frame.classList.remove('hidden');
+      // 加载文档并允许编辑
+      frame.src = url;
+      
+      // 监听iframe加载完成，提示可编辑
+      frame.onload = function() {
+        console.log('日志文档加载完成，可开始编辑');
+      };
+    }
+    
+    // 验证日志密码
+    function verifyLogPassword() {
+      if (!selectedStore) {
+        closeLogModal();
+        return;
+      }
+      
+      // 查找选中的门店
+      const store = LOG_STORES.find(store => store.id === selectedStore);
+      if (!store) {
+        document.getElementById('logErrorMessage').textContent = '门店信息不存在';
+        return;
+      }
+      
+      const inputPassword = document.getElementById('logPasswordInput').value;
+      
+      if (inputPassword === store.password) {
+        document.getElementById('passwordModal').classList.add('hidden');
+        showMonthSelection(selectedStore);
+      } else {
+        document.getElementById('logErrorMessage').textContent = '密码错误，请重新输入';
+        document.getElementById('logPasswordInput').focus();
+      }
+    }
+    
+    // 关闭日志密码弹窗
+    function closeLogModal() {
+      document.getElementById('passwordModal').classList.add('hidden');
+      document.getElementById('logErrorMessage').textContent = '';
+      selectedStore = null;
+    }
+    
+    // 验证管理员密码
+    function verifyAdminPassword() {
+      const inputPassword = document.getElementById('adminPasswordInput').value;
+      
+      if (inputPassword === ADMIN_PASSWORD) {
+        localStorage.removeItem('selectedWorkLogStore');
+        document.getElementById('adminModal').classList.add('hidden');
+        resetWorkLog();
+      } else {
+        document.getElementById('adminErrorMsg').textContent = '管理员密码错误';
+        document.getElementById('adminPasswordInput').focus();
+      }
+    }
+    
+    // 关闭管理员弹窗
+    function closeAdminModal() {
+      document.getElementById('adminModal').classList.add('hidden');
+      document.getElementById('adminErrorMsg').textContent = '';
+    }
+    
+    // 重置工作日志选择
+    function resetWorkLog() {
+      const hasSavedStore = localStorage.getItem('selectedWorkLogStore');
+      
+      if (hasSavedStore) {
+        document.getElementById('adminPasswordInput').value = '';
+        document.getElementById('adminErrorMsg').textContent = '';
+        document.getElementById('adminModal').classList.remove('hidden');
+      } else {
+        document.getElementById('mainFrame').classList.add('hidden');
+        document.getElementById('mainFrame').src = 'about:blank';
+        document.getElementById('monthSelection').classList.add('hidden');
+        document.getElementById('logStoreSelection').classList.remove('hidden');
+        selectedStore = null;
+      }
+    }
+    
+    // 刷新当前页面
+    function refreshCurrent() {
+      const frame = document.getElementById('mainFrame');
+      if (!frame.classList.contains('hidden') && frame.src && frame.src !== 'about:blank') {
+        frame.contentWindow.location.reload();
+      } else {
+        location.reload();
+      }
+    }
+    
+    // 切换全屏
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          alert(`全屏请求失败: ${err.message}`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+    
+    // 页面加载完成后初始化
+    window.onload = initWorkLog;
+  </script>
+</body>
+</html>
