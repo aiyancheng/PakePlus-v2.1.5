@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>待办事项 - 门店选择</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Arial', 'Microsoft YaHei', sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow: hidden;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .main-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    .sidebar {
+      width: 320px;
+      min-width: 280px;
+      background: linear-gradient(180deg, #2c3e50 0%, #1a1a2e 100%);
+      padding: 30px 20px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 5px 0 15px rgba(0,0,0,0.2);
+      z-index: 10;
+      transition: all 0.3s ease;
+      overflow-y: auto;
+    }
+    .sidebar.hidden {
+      width: 0;
+      min-width: 0;
+      padding: 30px 0;
+      overflow: hidden;
+    }
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.95);
+      overflow: hidden;
+    }
+    .toggle-sidebar-btn {
+      position: absolute;
+      top: 20px;
+      left: 320px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      z-index: 100;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    .toggle-sidebar-btn:hover {
+      background: #2980b9;
+      transform: scale(1.1);
+    }
+    .sidebar.hidden + .content .toggle-sidebar-btn {
+      left: 10px;
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .logo h1 {
+      color: #ffffff;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    .logo-subtitle {
+      color: #bdc3c7;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+    .version {
+      color: #7f8c8d;
+      font-size: 12px;
+    }
+    .buttons-container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-top: 20px;
+      max-height: calc(100vh - 250px); /* 调整最大高度，考虑头部和底部 */
+      overflow-y: auto; /* 当内容超出时显示滚动条 */
+      padding-right: 5px; /* 为滚动条留出空间 */
+    }
+    .buttons-container::-webkit-scrollbar {
+      width: 8px;
+    }
+    .buttons-container::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+    }
+    .buttons-container::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.3);
+      border-radius: 4px;
+    }
+    .buttons-container::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.5);
+    }
+    .btn {
+      padding: 18px 15px;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      text-align: center;
+      width: 100%;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    .btn:hover:not(:disabled) {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+    }
+    .btn:active:not(:disabled) {
+      transform: translateY(-1px);
+    }
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+      filter: grayscale(0.7);
+    }
+    .btn-selected {
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.7), 0 8px 20px rgba(0,0,0,0.2) !important;
+      animation: pulse 2s infinite;
+    }
+    .header {
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #eaeaea;
+    }
+    .header h2 {
+      color: #2c3e50;
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, #3498db, #2ecc71);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header p {
+      color: #7f8c8d;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    .frame-container {
+      flex: 1;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #e0e0e0;
+    }
+    .frame-header {
+      background: linear-gradient(90deg, #3498db, #2ecc71);
+      color: white;
+      padding: 20px 30px;
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .store-info {
+      font-size: 16px;
+      font-weight: 400;
+      opacity: 0.9;
+      display: none;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      flex: 1;
+    }
+    .status-bar {
+      background: linear-gradient(90deg, #34495e, #2c3e50);
+      color: #ecf0f1;
+      padding: 15px 20px;
+      font-size: 14px;
+      text-align: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      border-radius: 10px;
+    }
+    .status-text {
+      font-weight: 600;
+    }
+    .timestamp {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+    .btn-blue { background: linear-gradient(135deg, #3498db, #2980b9); }
+    .btn-green { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+    .btn-red { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+    .btn-orange { background: linear-gradient(135deg, #f39c12, #d35400); }
+    .btn-purple { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+    .btn-cyan { background: linear-gradient(135deg, #1abc9c, #16a085); }
+    .btn-pink { background: linear-gradient(135deg, #e84393, #fd79a8); }
+    .btn-teal { background: linear-gradient(135deg, #00b894, #00cec9); }
+    .btn-indigo { background: linear-gradient(135deg, #6c5ce7, #a29bfe); }
+    .btn-brown { background: linear-gradient(135deg, #e17055, #fab1a0); }
+    .btn-gray { background: linear-gradient(135deg, #636e72, #b2bec3); }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7), 0 8px 20px rgba(0,0,0,0.2); }
+      70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0), 0 8px 20px rgba(0,0,0,0.2); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0), 0 8px 20px rgba(0,0,0,0.2); }
+    }
+
+    .loading {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      color: #7f8c8d;
+    }
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .back-to-home {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      color: white;
+      text-decoration: none;
+      padding: 12px 20px;
+      border-radius: 30px;
+      font-weight: bold;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .back-to-home:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+      background: linear-gradient(135deg, #2980b9, #3498db);
+    }
+
+    @media (max-width: 1200px) {
+      .sidebar { width: 280px; padding: 20px 15px; }
+      .btn { padding: 16px 12px; font-size: 15px; }
+    }
+    @media (max-width: 768px) {
+      .main-container { flex-direction: column; }
+      .sidebar { width: 100%; height: auto; padding: 15px; }
+      .buttons-container { flex-direction: row; flex-wrap: wrap; gap: 10px; }
+      .btn { flex: 1 0 calc(50% - 10px); min-width: 150px; }
+      .content { padding: 15px; }
+      .toggle-sidebar-btn { top: 10px; left: 280px; }
+      .sidebar.hidden + .content .toggle-sidebar-btn { left: 10px; }
+      .back-to-home {
+        top: 10px;
+        right: 10px;
+        padding: 10px 15px;
+        font-size: 14px;
+      }
+    }
+    @media (max-height: 768px) {
+      .sidebar { padding: 20px 15px; }
+      .btn { padding: 14px 10px; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-to-home" target="_self">🏠 返回主页</a>
+
+  <div class="main-container">
+    <div class="sidebar" id="sidebar">
+      <div class="logo">
+        <h1>门店选择</h1>
+        <p class="logo-subtitle">请从以下门店中选择一个</p>
+        <p class="version">版本2026.01.05 1.0</p>
+      </div>
+      <div class="buttons-container">
+        <button class="btn btn-blue" data-link="https://rili.wps.cn/c/g_w2kRPF9e/">徐家井店</button>
+        <button class="btn btn-green" data-link="https://rili.wps.cn/c/g_O3ASj7Wz/">黄古山店</button>
+        <button class="btn btn-red" data-link="https://rili.wps.cn/c/g_RhugkyXw/">眼科诊所</button>
+        <button class="btn btn-orange" data-link="https://rili.wps.cn/c/g_WgmmTCGW/">时代旺角</button>
+        <button class="btn btn-purple" data-link="https://rili.wps.cn/c/g_bjhMBaAh/">东山景区</button>
+        <button class="btn btn-cyan" data-link="https://rili.wps.cn/c/g_dYwK9qr4/">春天广场</button>
+        <button class="btn btn-pink" data-link="https://rili.wps.cn/c/g_NQOxfDGE/">苏通国际</button>
+        <button class="btn btn-teal" data-link="https://rili.wps.cn/c/g_l9ppWcIt/">愿景国际</button>
+        <button class="btn btn-indigo" data-link="https://rili.wps.cn/c/g_L2SJoKEL/">万达广场</button>
+        <button class="btn btn-brown" data-link="https://rili.wps.cn/c/g_V0WRv6cx/">新天地店</button>
+        <button class="btn btn-gray" data-link="https://rili.wps.cn/c/g_rrZjd8gZ/">白竹湖店</button>
+        <button class="btn btn-blue" data-link="https://rili.wps.cn/c/g_AU4dcLyW/">罗口门店</button>
+        <button class="btn btn-green" data-link="https://rili.wps.cn/c/g_HvRRCEMr/">万联店</button>
+        <button class="btn btn-red" data-link="https://rili.wps.cn/c/g_Zd5w1bts/">祁阳眼科</button>
+      </div>
+      <div class="status-bar">
+        <span class="status-text" id="status-text">等待选择门店</span>
+        <span class="timestamp" id="timestamp">-</span>
+      </div>
+    </div>
+
+    <button class="toggle-sidebar-btn" id="toggle-sidebar-btn" onclick="toggleSidebar()">«</button>
+
+    <div class="content">
+      <div class="frame-container">
+        <div class="frame-header">
+          <span id="frame-title">等待选择门店</span>
+          <span class="store-info" id="store-info">-</span>
+        </div>
+        <div id="loading" class="loading" style="display: none;">
+          <div class="loading-spinner"></div>
+          <p>正在加载WPS页面，请稍候...</p>
+        </div>
+        <iframe id="wps-frame" src="" frameborder="0" title="WPS嵌入式页面"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 简化版交互逻辑
+    let currentStore = null;
+
+    function hideLoading() {
+      const loading = document.getElementById('loading');
+      if (loading) {
+        loading.style.display = 'none';
+      }
+    }
+
+    // 监听iframe加载完成事件
+    document.getElementById('wps-frame').addEventListener('load', hideLoading);
+
+    // 切换侧边栏显示/隐藏
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const toggleBtn = document.getElementById('toggle-sidebar-btn');
+      
+      if (sidebar.classList.contains('hidden')) {
+        sidebar.classList.remove('hidden');
+        toggleBtn.textContent = '«';
+        toggleBtn.style.left = '320px';
+      } else {
+        sidebar.classList.add('hidden');
+        toggleBtn.textContent = '»';
+        toggleBtn.style.left = '10px';
+      }
+    }
+
+    // 更新时间戳
+    function updateTimestamp() {
+      const now = new Date();
+      const timestampEl = document.getElementById('timestamp');
+      if (timestampEl) {
+        timestampEl.textContent = now.toLocaleTimeString('zh-CN');
+      }
+    }
+
+    // 应用门店选择
+    function applyStoreSelection(storeName, link) {
+      const buttons = document.querySelectorAll('.btn');
+      const frame = document.getElementById('wps-frame');
+      const statusText = document.getElementById('status-text');
+      const frameTitle = document.getElementById('frame-title');
+      const storeInfo = document.getElementById('store-info');
+      const loading = document.getElementById('loading');
+
+      if (loading) loading.style.display = 'flex';
+      if (frame) frame.src = link;
+      if (statusText) statusText.textContent = `已选择: ${storeName}`;
+      if (frameTitle) frameTitle.textContent = `${storeName} - 待办事项管理`;
+      if (storeInfo) storeInfo.textContent = `${storeName}`;
+
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        if (btn.textContent === storeName) {
+          btn.classList.add('btn-selected');
+        } else {
+          btn.classList.remove('btn-selected');
+        }
+      });
+
+      currentStore = storeName;
+      localStorage.setItem('selectedStore', storeName);
+      localStorage.setItem('selectedStoreLink', link);
+      localStorage.setItem('selectedTime', new Date().toISOString());
+      updateTimestamp();
+    }
+
+    // 处理按钮点击
+    function handleButtonClick(button) {
+      const link = button.getAttribute('data-link');
+      const storeName = button.textContent;
+
+      // 检查是否已有选择
+      const savedStore = localStorage.getItem('selectedStore');
+      if (savedStore && savedStore !== storeName) {
+        alert(`已选择门店"${savedStore}"，不可更改。`);
+        return;
+      }
+
+      applyStoreSelection(storeName, link);
+      showNotification(`已选择门店：${storeName}，正在加载页面...`);
+
+      // 自动隐藏侧边栏
+      setTimeout(() => {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar && !sidebar.classList.contains('hidden')) {
+          toggleSidebar();
+        }
+      }, 1500);
+    }
+
+    // 显示通知
+    function showNotification(message) {
+      // 创建临时通知元素
+      const notification = document.createElement('div');
+      notification.textContent = message;
+      notification.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 8px;
+        z-index: 10000;
+        font-size: 16px;
+        animation: fadeInOut 3s forwards;
+      `;
+      document.body.appendChild(notification);
+      
+      // 添加淡入淡出动画
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes fadeInOut {
+          0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+          10% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+          90% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+          100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        }
+      `;
+      document.head.appendChild(style);
+      
+      // 3秒后移除通知
+      setTimeout(() => {
+        notification.remove();
+        style.remove();
+      }, 3000);
+    }
+
+    // 初始化页面
+    function initializePage() {
+      const savedStore = localStorage.getItem('selectedStore');
+      const savedLink = localStorage.getItem('selectedStoreLink');
+      
+      if (savedStore && savedLink) {
+        applyStoreSelection(savedStore, savedLink);
+        console.log(`已自动恢复之前选择的门店: ${savedStore}`);
+        
+        // 延迟隐藏侧边栏
+        setTimeout(() => {
+          const sidebar = document.getElementById('sidebar');
+          if (sidebar && !sidebar.classList.contains('hidden')) {
+            toggleSidebar();
+          }
+        }, 2000);
+      }
+      
+      // 每分钟更新一次时间戳
+      setInterval(updateTimestamp, 60000);
+    }
+
+    // 添加基础安全保护
+    function addSecurityProtection() {
+      document.addEventListener('keydown', function(e) {
+        // 禁用开发者工具和常用快捷键
+        if (
+          e.key === 'F12' ||
+          (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
+          (e.ctrlKey && (e.key === 'U' || e.key === 'S'))
+        ) {
+          e.preventDefault();
+          return false;
+        }
+      });
+
+      // 禁用右键菜单
+      document.addEventListener('contextmenu', e => e.preventDefault());
+    }
+
+    // 页面卸载前警告
+    window.addEventListener('beforeunload', function(e) {
+      if (localStorage.getItem('selectedStore')) {
+        e.preventDefault();
+        e.returnValue = '您已选择门店，确定要离开此页面吗？';
+      }
+    });
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('待办事项管理系统已加载');
+      updateTimestamp();
+
+      // 为所有按钮添加点击事件监听器
+      document.querySelectorAll('.btn').forEach(button => {
+        button.addEventListener('click', () => handleButtonClick(button));
+      });
+
+      initializePage();
+      addSecurityProtection();
+    });
+  </script>
+</body>
+</html>
+
+
+
