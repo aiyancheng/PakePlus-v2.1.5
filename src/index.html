@@ -1,32 +1,252 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <link rel="stylesheet" href="styles.css" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>PakePlus App</title>
-        <script type="module" src="/main.js" defer></script>
-    </head>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>爱眼城数字化工作平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        h1 {
+            color: white;
+            font-size: 2.8em;
+            margin: 0;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+        }
+        
+        .button-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            padding: 25px 20px;
+            max-width: 2560px;
+            margin: 0 auto;
+        }
+        
+        .btn {
+            padding: 12px 5px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            text-align: center;
+            flex: 2;
+            min-width: 160px;
+            max-width: 240px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+        }
+        
+        .btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+        
+        .btn2 { background: linear-gradient(135deg, #4ECDC4, #44a08d); }
+        .btn3 { background: linear-gradient(135deg, #FFD93D, #f4d03f); }
+        .btn4 { background: linear-gradient(135deg, #A8E6CF, #66b0a7); }
+        .btn5 { background: linear-gradient(135deg, #FFA07A, #ff8c69); }
+        .btn6 { background: linear-gradient(135deg, #9B59B6, #8e44ad); }
+        .btn7 { background: linear-gradient(135deg, #45B7D1, #2980b9); }
+        .btn8 { background: linear-gradient(135deg, #FFEAA7, #f4d160); }
+        
+        .content {
+            flex: 1;
+            display: flex;
+            align-items: top;
+            justify-content: center;
+            padding: 30px 20px;
+        }
+        
+        .desktop {
+            background: white;
+            border-radius: 10px;
+            padding: 10px;
+            max-width: 1960px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .welcome h3 {
+            font-size: 1.6em;
+            color: #165DFF;
+            margin: 0 0 25px 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: #165DFF;
+            background-clip: text;
+        }
+        
+.module-list {
+    text-align: left;
+    list-style: none;
+    margin-top: 15px;
+}
 
-    <body>
-        <main class="container">
-            <h1>Welcome to PakePlus</h1>
-            <form class="row" id="greet-form">
-                <input id="inputValue" placeholder="Enter a something..." />
-            </form>
-            <div class="resultBox">
-                <span>result: </span>
-                <span id="result"></span>
+.module-list li {
+    margin: 10px 0;
+    padding: 10px 0;
+    border-bottom: 1px dashed #e0e6ed;
+    font-size: 1.5em;
+}
+
+/* 移动端适配：缩小字号，避免文字溢出 */
+@media (max-width: 768px) {
+    .module-list li {
+        font-size: 1.2em;
+    }
+}
+        
+        .module-list strong {
+            color: #165DFF;
+            font-weight: 600;
+            display: inline-block;
+            width: 240px;
+        }
+        
+        .footer {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 25px;
+            font-size: 1.2em;
+            background: rgba(255, 255, 255, 0.7);
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .top-nav {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+        
+        .nav-btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .button-grid {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            h1 {
+                font-size: 2.2em;
+            }
+            
+            .welcome h3 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-nav">
+        <button class="nav-btn" id="fullscreenBtn">全 屏</button>
+    </div>
+    
+    <div class="header">
+        <h1>爱 眼 城 数 字 化 工 作 平 台</h1>
+    </div>
+    
+    <div class="button-grid">
+        <a href="kehuguanli.html" class="btn btn2" target="_blank">👥 客 户 管 理</a>
+        <a href="gongzuorizhi.html" class="btn btn3" target="_blank">📅 工 作 日 志</a>
+        <a href="yingzhiyinghui.html" class="btn btn4" target="_blank">❓应 知 应 会</a>
+        <a href="quguangdujisuan.html" class="btn btn5" target="_blank">🧰 屈 光 度 计 算</a>
+        <a href="tonggaoceliang.html" class="btn btn6" target="_blank">📐 瞳 高 测 量</a>
+        <a href="shigongnengfenxi.html" class="btn btn7" target="_blank">📊视 功 能 分 析</a>
+        <a href="gongsiwenjian.html" class="btn btn8" target="_blank">📑 公 司 文 件</a>
+    </div>
+    
+    <div class="content">
+        <div class="desktop">
+            <div class="welcome">
+                <h3>本平台集成日常办公、制度学习与专业成长资源，助您高效工作、快速提升！</h3>
             </div>
-            <div class="invokeBox">
-                <button id="openUrl">open_url_browser</button>
-                <button id="openUrlNew">open_url_new</button>
-                <button id="runCommand">run_command</button>
-                <button id="downloadFile">download_file</button>
-                <button id="getExeDir">get_exe_dir</button>
-                <button id="getEnvVar">get_env_var</button>
-                <button id="findPort">find_port</button>
-            </div>
-        </main>
-    </body>
+            <ul class="module-list">
+                <li><strong>👥  客 户 管 理</strong>：维护客户回访跟进记录</li>
+                <li><strong>📅  工 作 日 志</strong>：记录每日任务与成果</li>
+                <li><strong>❓  应 知 应 会</strong>：员工必备500问</li>
+                <li><strong>🧰  屈 光 计 算</strong>：眼视光屈光度计算工具</li>
+                <li><strong>📐  瞳 高 测 量</strong>：实际戴镜高度测量</li>
+                <li><strong>📊视 功 能 分 析</strong>：双眼视功能诊断分析</li>
+                <li><strong>📑  公 司 文 件</strong>：企业内部管理制度</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="footer">
+        爱眼城数字化工作平台 - 为您提供全方位的数字化解决方案
+    </div>
+    
+    <script>
+        document.getElementById('fullscreenBtn').addEventListener('click', function() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        });
+        
+        document.addEventListener('fullscreenchange', function() {
+            if (!document.fullscreenElement) {
+                console.log('退出全屏');
+            }
+        });
+    </script>
+</body>
 </html>
+
+
+
