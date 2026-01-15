@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客户管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 1920px; /* 27寸屏幕最大宽度 */
+            margin: 0 auto; /* 居中显示 */
+        }
+
+        /* 首页样式 */
+        #index-page {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            padding: 20px;
+            overflow: auto;
+        }
+
+        #index-page.active {
+            display: flex;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 30px;
+            color: #333;
+            padding: 10px 0;
+        }
+
+        .stores-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            flex: 1;
+            padding: 0 20px 20px 20px;
+            overflow-y: auto;
+            max-width: 1400px; /* 限制最大宽度 */
+            margin: 0 auto; /* 居中 */
+        }
+
+        .store-btn {
+            padding: 24px 20px;
+            background-color: #e0e0e0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-weight: 500;
+        }
+
+        .store-btn:hover {
+            background-color: #c0c0c0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-top: 1px solid #ddd;
+        }
+
+        .footer-btn {
+            padding: 12px 25px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .footer-btn:hover {
+            background-color: #005cbf;
+        }
+
+        /* 详情页样式 */
+        #detail-page {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+        }
+
+        #detail-page.active {
+            display: flex;
+        }
+
+        .detail-header {
+            text-align: center;
+            font-size: 24px;
+            padding: 15px 20px;
+            color: #333;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            flex-shrink: 0;
+        }
+
+        .detail-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 280px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .sidebar.collapsed {
+            width: 60px;
+        }
+
+        .sidebar-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 15px 0;
+            color: #333;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .collapsed .sidebar-title {
+            display: none;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+
+        .collapsed .sidebar-nav {
+            padding: 10px 0;
+        }
+
+        .sidebar-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background-color: #e9ecef;
+            border: none;
+            border-left: 4px solid transparent;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: left;
+            transition: all 0.3s;
+            margin-bottom: 5px;
+        }
+
+        .collapsed .sidebar-btn {
+            padding: 16px 5px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .sidebar-btn:hover {
+            background-color: #dcdcdc;
+        }
+
+        .sidebar-btn.active {
+            background-color: #007bff;
+            color: white;
+            border-left-color: #005cbf;
+        }
+
+        .collapsed .sidebar-btn.active {
+            border-left-color: #007bff;
+        }
+
+        .sidebar-btn span.text {
+            display: inline-block;
+        }
+
+        .collapsed .sidebar-btn span.text {
+            display: none;
+        }
+
+        .sidebar-btn span.icon {
+            display: inline-block;
+            width: 20px;
+            text-align: center;
+        }
+
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .document-frame {
+            flex: 1;
+            width: 100%;
+            border: none;
+            min-height: 0;
+        }
+
+        .error-message {
+            flex: 1;
+            padding: 30px;
+            text-align: center;
+            color: #d9534f;
+            font-size: 18px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .link-button {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .link-button:hover {
+            background-color: #005cbf;
+        }
+
+        .hidden {
+            display: none;
+        }
+        
+        /* 返回主页链接样式 */
+        .back-to-home {
+            display: block;
+            width: calc(100% - 4px);
+            padding: 18px;
+            background-color: #e6e6e6;
+            color: #333;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin: 2px;
+            text-align: center;
+            text-decoration: none;
+        }
+        
+        .back-to-home:hover {
+            background-color: #c0c0c0;
+        }
+
+        .toggle-sidebar-btn {
+            position: absolute;
+            top: 20px;
+            right: -30px;
+            width: 30px;
+            height: 40px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .toggle-sidebar-btn:hover {
+            background-color: #005cbf;
+        }
+        
+        /* 加载指示器 */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            font-size: 18px;
+            color: #666;
+        }
+        
+        /* 针对电脑端的优化 */
+        @media (min-width: 1024px) and (max-width: 1920px) {
+            .stores-container {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 20px;
+                max-width: 1200px;
+            }
+            
+            .store-btn {
+                padding: 24px 20px;
+                font-size: 18px;
+            }
+            
+            .sidebar {
+                width: 260px;
+            }
+            
+            .sidebar.collapsed {
+                width: 60px;
+            }
+        }
+        
+        /* 针对大屏幕的优化 */
+        @media (min-width: 1600px) and (max-width: 1920px) {
+            .stores-container {
+                grid-template-columns: repeat(5, 1fr);
+                max-width: 1500px;
+            }
+            
+            .sidebar {
+                width: 300px;
+            }
+        }
+        
+        /* 针对小屏幕电脑的优化 */
+        @media (min-width: 1024px) and (max-width: 1366px) {
+            .stores-container {
+                grid-template-columns: repeat(3, 1fr);
+                max-width: 1000px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 首页 -->
+        <div id="index-page" class="active">
+            <h1 class="page-title">客户管理</h1>
+            <div class="stores-container">
+                <button class="store-btn" data-store="徐家井店">徐家井店</button>
+                <button class="store-btn" data-store="黄古山店">黄古山店</button>
+                <button class="store-btn" data-store="眼科诊所店">眼科诊所店</button>
+                <button class="store-btn" data-store="时代旺角店">时代旺角店</button>
+                <button class="store-btn" data-store="东山景区店">东山景区店</button>
+                <button class="store-btn" data-store="春天广场店">春天广场店</button>
+                <button class="store-btn" data-store="苏通国际店">苏通国际店</button>
+                <button class="store-btn" data-store="万达店">万达店</button>
+                <button class="store-btn" data-store="愿景国际店">愿景国际店</button>
+                <button class="store-btn" data-store="新天地店">新天地店</button>
+                <button class="store-btn" data-store="白竹湖店">白竹湖店</button>
+                <button class="store-btn" data-store="罗口门店">罗口门店</button>
+                <button class="store-btn" data-store="万联店">万联店</button>
+                <button class="store-btn" data-store="祁阳眼科店">祁阳眼科店</button>
+            </div>
+            <div class="footer">
+                <button class="footer-btn" id="refresh-btn">刷新页面</button>
+            </div>
+        </div>
+
+        <!-- 详情页 -->
+        <div id="detail-page">
+            <h1 class="detail-header" id="detail-title">门店客户管理系统</h1>
+            <div class="detail-content">
+                <div class="sidebar" id="sidebar">
+                    <button class="toggle-sidebar-btn" id="toggle-sidebar">«</button>
+                    <div class="sidebar-title" id="sidebar-title">功能菜单</div>
+                    <div class="sidebar-nav">
+                        <button class="sidebar-btn active" data-section="add-customer">
+                            <span class="icon">📝</span>
+                            <span class="text">新增客户登记</span>
+                        </button>
+                        <button class="sidebar-btn" data-section="follow-up">
+                            <span class="icon">📞</span>
+                            <span class="text">当日回访客户</span>
+                        </button>
+                        <button class="sidebar-btn" data-section="review">
+                            <span class="icon">📋</span>
+                            <span class="text">复查记录管理</span>
+                        </button>
+                        <button class="sidebar-btn" data-section="todo">
+                            <span class="icon">✅</span>
+                            <span class="text">待办事项</span>
+                        </button>
+                        <a href="index.html" class="back-to-home" target="_self">🏠 返回主页</a>
+                        </button>
+                    </div>
+                </div>
+                <div class="content-area">
+                    <iframe id="document-frame" class="document-frame" src="about:blank"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 存储当前选择的门店
+        let currentStore = localStorage.getItem('selectedStore') || '';
+        
+        // Kdocs链接映射 - 修复后的链接
+        const CUSTOMER_LINKS = {
+            "徐家井店": {
+                "add-customer": { name: "新增客户登记", url: "https://www.kdocs.cn/wo/sl/v1NAdNF" },
+                "follow-up": { name: "当日回访客户", url: "https://www.kdocs.cn/wo/sl/v141QvA8" },
+                "review": { name: "复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/OqwUEQOC" },
+                "todo": { name: "待办事项", url: "https://rili.wps.cn/c/g_w2kRPF9e/" }
+            },
+            "黄古山店": {
+                "add-customer": { name: "新增客户登记", url: "https://www.kdocs.cn/wo/sl/v1PKC2" },
+                "follow-up": { name: "当日回访客户", url: "https://www.kdocs.cn/wo/sl/v1CCE4R" },
+                "review": { name: "复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/6plLcMnU" },
+                "todo": { name: "待办事项", url: "https://rili.wps.cn/c/g_O3ASj7Wz/" }
+            },
+            "眼科诊所店": {
+                "add-customer": { name: "新增客户登记", url: "https://www.kdocs.cn/wo/sl/v11BB51C" },
+                "follow-up": { name: "当日回访客户", url: "https://www.kdocs.cn/wo/sl/v1lHuBv" },
+                "review": { name: "复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/Jt0Uzaok" },
+                "todo": { name: "待办事项", url: "https://rili.wps.cn/c/g_RhugkyXw/" }
+            },
+            "时代旺角店": {
+                "add-customer": { name: "新增客户登记", url: "https://www.kdocs.cn/l/cnD1vN2ewxwH" },
+                "follow-up": { name: "当日回访客户", url: "https://www.kdocs.cn/wo/sl/v1UvVo4" },
+                "review": { name: "复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/F3yfrMLJ" },
+                "todo": { name: "待办事项", url: "https://rili.wps.cn/c/g_WgmmTCGW/" }
+            },
+            "东山景区店": {
+                "add-customer": { name: "新增客户登记", url: "https://www.kdocs.cn/l/cuQaE92E4JTb" },
+                "follow-up": { name: "当日回访客户", url: "https://www.kdocs.cn/wo/sl/v14M4G51" },
+                "review": { name: "复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/Y3voQn8B" },
+                "todo": { name: "待办事项", url: "https://rili.wps.cn/c/g_bjhMBaAh/" }
+            },
+            "春天广场店": {
+                "add-customer": { name: "新增客户登记", url: "https://www.kdocs.cn/l/cttPVJlz6wvX" },
+                "follow-up": { name: "当日回访客户", url: "https://www.kdocs.cn/wo/sl/v12jciOV" },
+                "review": { name: "复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/04UYAPH9" },
+                "todo": { name: "待办事项", url: "https://rili.wps.cn/c/g_dYwK9qr4/" }
+            },
+            "苏通国际店": {
+                "add-customer": { name: "新增客户登记", url: "https://www.kdocs.cn/wo/sl/v1WnUUM" },
+                "follow-up": { name: "当日回访客户", url: "https://www.kdocs.cn/wo/sl/v14NS4y2" },
+                "review": { name: "复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/kmYQlhnH" },
+                "todo": { name: "待办事项", url: "https://rili.wps.cn/c/g_NQOxfDGE/" }
+            },
+            "万达店": {
+                "add-customer": { name: "新增客户登记", url: "https://www.kdocs.cn/wo/sl/v14T9Pyw" },
+                "follow-up": { name: "当日回访客户", url: "https://www.kdocs.cn/wo/sl/v15L1mS" },
+                "review": { name: "复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/jWwg9dDi" },
+                "todo": { name: "待办事项", url: "https://rili.wps.cn/c/g_l9ppWcIt/" }
+            },
+            "愿景国际店": {
+                "add-customer": { name: "新增客户登记", url: "https://www.kdocs.cn/wo/sl/v12vJw5z" },
+                "follow-up": { name: "当日回访客户", url: "https://www.kdocs.cn/wo/sl/v121KRe3" },
+                "review": { name: "复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/QZFcAnu7" },
+                "todo": { name: "待办事项", url: "https://rili.wps.cn/c/g_Zd5w1bts/" }
+            },
+            "新天地店": {
+                "add-customer": { name: "新增客户登记", url: "https://www.kdocs.cn/wo/sl/v12zQIdM" },
+                "follow-up": { name: "当日回访客户", url: "https://www.kdocs.cn/wo/sl/v11BemYj" },
+                "review": { name: "复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/qdSX43oX" },
+                "todo": { name: "待办事项", url: "https://rili.wps.cn/c/g_V0WRv6cx/" }
+            },
+            "万联店": {
+                "add-customer": { name: "新增客户登记", url: "https://www.kdocs.cn/wo/sl/v12msbCv" },
+                "follow-up": { name: "当日回访客户", url: "https://www.kdocs.cn/wo/sl/v13Rx5IH" },
+                "review": { name: "复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/blubZh3e" },
+                "todo": { name: "待办事项", url: "https://rili.wps.cn/c/g_HvRRCEMr/" }
+            },
+            "罗口门店": {
+                "add-customer": { name: "新增客户登记", url: "https://www.kdocs.cn/wo/sl/v1RKC2L" },
+                "follow-up": { name: "当日回访客户", url: "https://www.kdocs.cn/wo/sl/v130xxzy" },
+                "review": { name: "复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/npREjTc4" },
+                "todo": { name: "待办事项", url: "https://rili.wps.cn/c/g_AU4dcLyW/" }
+            },
+            "白竹湖店": {
+                "add-customer": { name: "新增客户登记", url: "https://www.kdocs.cn/wo/sl/v13UjoGr" },
+                "follow-up": { name: "当日回访客户", url: "https://www.kdocs.cn/wo/sl/v11N8yOp" },
+                "review": { name: "复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/zAXn08IF" },
+                "todo": { name: "待办事项", url: "https://rili.wps.cn/c/g_rrZjd8gZ/" }
+            },
+            "祁阳眼科店": {
+                "add-customer": { name: "新增客户登记", url: "https://www.kdocs.cn/wo/sl/v11ozRE6" },
+                "follow-up": { name: "当日回访客户", url: "https://www.kdocs.cn/wo/sl/v1449R6E" },
+                "review": { name: "复查记录管理", url: "https://www.kdocs.cn/etapps/query/q/eQoLfNHB" },
+                "todo": { name: "待办事项", url: "https://rili.wps.cn/c/g_Zd5w1bts/" }
+            }
+        };
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+        
+        function initializeApp() {
+            setupEventListeners();
+            updatePageBasedOnState();
+        }
+        
+        function setupEventListeners() {
+            // 门店选择按钮事件
+            const storeButtons = document.querySelectorAll('.store-btn');
+            storeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const storeName = this.getAttribute('data-store');
+                    selectStore(storeName);
+                });
+            });
+            
+            // 详情页侧边栏按钮事件
+            const sidebarButtons = document.querySelectorAll('.sidebar-btn:not(#back-to-home)');
+            sidebarButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.getAttribute('data-section');
+                    activateSection(section);
+                });
+            });
+            
+            // 返回主页按钮事件
+            document.getElementById('back-to-home').addEventListener('click', function() {
+                showIndexPage();
+            });
+            
+            // 侧边栏切换按钮事件
+            document.getElementById('toggle-sidebar').addEventListener('click', toggleSidebar);
+            
+            // 刷新页面按钮事件
+            document.getElementById('refresh-btn').addEventListener('click', function() {
+                location.reload();
+            });
+        }
+        
+        function selectStore(storeName) {
+            localStorage.setItem('selectedStore', storeName);
+            currentStore = storeName;
+            showDetailPage();
+        }
+        
+        function showIndexPage() {
+            document.getElementById('index-page').classList.add('active');
+            document.getElementById('detail-page').classList.remove('active');
+            document.title = '客户管理系统';
+            // 清除当前门店选择
+            currentStore = '';
+            localStorage.removeItem('selectedStore');
+        }
+        
+        function showDetailPage() {
+            document.getElementById('index-page').classList.remove('active');
+            document.getElementById('detail-page').classList.add('active');
+            document.getElementById('detail-title').textContent = `${currentStore}客户管理系统`;
+            document.getElementById('sidebar-title').textContent = `${currentStore}功能菜单`;
+            document.title = `${currentStore}客户管理系统`;
+            
+            // 默认激活第一个section
+            activateSection('add-customer');
+        }
+        
+        function activateSection(section) {
+            // 更新侧边栏按钮状态
+            document.querySelectorAll('.sidebar-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-section="${section}"]`).classList.add('active');
+            
+            // 加载对应文档
+            loadDocument(section);
+        }
+        
+        function loadDocument(section) {
+            const frame = document.getElementById('document-frame');
+            
+            // 获取当前门店对应的文档URL
+            if (currentStore && CUSTOMER_LINKS[currentStore]) {
+                const docInfo = CUSTOMER_LINKS[currentStore][section];
+                
+                if (docInfo && docInfo.url) {
+                    // 添加时间戳防止缓存问题
+                    const timestamp = new Date().getTime();
+                    const urlWithTimestamp = `${docInfo.url}?t=${timestamp}`;
+                    
+                    // 设置加载状态
+                    frame.style.display = 'block';
+                    
+                    // iframe加载错误处理
+                    frame.onerror = function() {
+                        console.error('文档加载失败:', docInfo.url);
+                        showErrorPage(`无法加载文档: ${docInfo.name}`, docInfo.url);
+                    };
+                    
+                    // iframe加载完成处理
+                    frame.onload = function() {
+                        try {
+                            frame.style.display = 'block';
+                        } catch(e) {
+                            console.error('iframe加载异常:', e);
+                        }
+                    };
+                    
+                    // 尝试加载文档
+                    try {
+                        frame.src = urlWithTimestamp;
+                    } catch(e) {
+                        console.error('加载文档时出错:', e);
+                        showErrorPage(`加载文档时发生错误: ${e.message}`, docInfo.url);
+                    }
+                } else {
+                    showErrorPage(`未找到该功能的文档链接: ${section}`, '');
+                }
+            } else {
+                showErrorPage('未找到该门店的文档配置', '');
+            }
+        }
+        
+        function showErrorPage(message, url) {
+            const frame = document.getElementById('document-frame');
+            frame.style.display = 'none';
+            
+            document.querySelector('.content-area').innerHTML = `
+                <div class="error-message">
+                    <h3>${message}</h3>
+                    ${url ? `<p>尝试加载的文档链接: <strong>${url}</strong></p>` : ''}
+                    <p>请检查链接有效性或联系管理员获取正确的文档链接。</p>
+                    ${url ? `<a href="${url}" target="_blank" class="link-button">尝试在新窗口打开</a>` : ''}
+                    <button class="footer-btn" style="margin-top: 20px;" onclick="location.reload()">刷新页面</button>
+                </div>
+            `;
+        }
+        
+        function updatePageBasedOnState() {
+            if(currentStore) {
+                showDetailPage();
+            } else {
+                showIndexPage();
+            }
+        }
+        
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('toggle-sidebar');
+            
+            if(sidebar.classList.contains('collapsed')) {
+                sidebar.classList.remove('collapsed');
+                toggleBtn.textContent = '«';
+            } else {
+                sidebar.classList.add('collapsed');
+                toggleBtn.textContent = '»';
+            }
+        }
+        
+        // 监听窗口大小变化，调整布局
+        window.addEventListener('resize', function() {
+            // 在窗口大小改变时不需要特殊处理，CSS Flexbox会自动适应
+        });
+    </script>
+</body>
+</html>
