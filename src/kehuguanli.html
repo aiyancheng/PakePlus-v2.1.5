@@ -71,7 +71,7 @@
             transition: all 0.3s;
             text-align: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            font-weight: 500;
+            font-weight: 200;
         }
 
         .store-btn:hover {
@@ -317,6 +317,78 @@
             color: #666;
         }
         
+        /* 密码输入模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover,
+        .close:focus {
+            color: black;
+        }
+        
+        .password-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        .submit-password-btn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        
+        .cancel-password-btn {
+            padding: 10px 20px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        
+        .submit-password-btn:hover {
+            background-color: #005cbf;
+        }
+        
+        .cancel-password-btn:hover {
+            background-color: #5a6268;
+        }
+        
         /* 针对电脑端的优化 */
         @media (min-width: 1024px) and (max-width: 1920px) {
             .stores-container {
@@ -383,6 +455,7 @@
             </div>
             <div class="footer">
                 <button class="footer-btn" id="refresh-btn">刷新页面</button>
+                <button class="footer-btn" id="clear-storage-btn" style="margin-left: 10px; background-color: #dc3545;">清除记忆</button>
             </div>
         </div>
 
@@ -411,7 +484,6 @@
                             <span class="text">待办事项</span>
                         </button>
                         <a href="index.html" class="back-to-home" target="_self">🏠 返回主页</a>
-                        </button>
                     </div>
                 </div>
                 <div class="content-area">
@@ -419,11 +491,26 @@
                 </div>
             </div>
         </div>
+        
+        <!-- 密码输入模态框 -->
+        <div id="passwordModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3>请输入管理员密码</h3>
+                <input type="password" id="adminPassword" class="password-input" placeholder="输入管理员密码">
+                <br>
+                <button class="submit-password-btn" id="submitPassword">确定</button>
+                <button class="cancel-password-btn" id="cancelPassword">取消</button>
+            </div>
+        </div>
     </div>
 
     <script>
         // 存储当前选择的门店
-        let currentStore = localStorage.getItem('selectedStore') || '';
+        let currentStore = '';
+        
+        // 管理员密码（实际应用中应从服务器验证）
+        const ADMIN_PASSWORD = 'admin123'; // 这里设置默认密码，实际应用中应更安全
         
         // Kdocs链接映射 - 修复后的链接
         const CUSTOMER_LINKS = {
@@ -519,8 +606,35 @@
         });
         
         function initializeApp() {
+            // 检查是否有记住的门店
+            const savedStore = localStorage.getItem('selectedStore');
+            
+            if (savedStore) {
+                // 如果是第一次访问（没有访问标记），则提示用户是否继续
+                const hasVisitedBefore = localStorage.getItem('hasVisitedBefore');
+                
+                if (!hasVisitedBefore) {
+                    // 第一次访问，提示用户
+                    if (confirm(`检测到您上次选择了"${savedStore}"，是否继续进入该门店系统？\n点击“取消”将返回首页重新选择`)) {
+                        currentStore = savedStore;
+                        showDetailPage();
+                    } else {
+                        // 用户选择不继续，显示首页
+                        showIndexPage();
+                    }
+                    // 标记已经访问过
+                    localStorage.setItem('hasVisitedBefore', 'true');
+                } else {
+                    // 不是第一次访问，直接进入保存的门店
+                    currentStore = savedStore;
+                    showDetailPage();
+                }
+            } else {
+                // 没有保存的门店，显示首页
+                showIndexPage();
+            }
+            
             setupEventListeners();
-            updatePageBasedOnState();
         }
         
         function setupEventListeners() {
@@ -534,7 +648,7 @@
             });
             
             // 详情页侧边栏按钮事件
-            const sidebarButtons = document.querySelectorAll('.sidebar-btn:not(#back-to-home)');
+            const sidebarButtons = document.querySelectorAll('.sidebar-btn:not(.back-to-home)');
             sidebarButtons.forEach(button => {
                 button.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -544,7 +658,8 @@
             });
             
             // 返回主页按钮事件
-            document.getElementById('back-to-home').addEventListener('click', function() {
+            document.getElementById('back-to-home').addEventListener('click', function(e) {
+                e.preventDefault();
                 showIndexPage();
             });
             
@@ -555,10 +670,80 @@
             document.getElementById('refresh-btn').addEventListener('click', function() {
                 location.reload();
             });
+            
+            // 清除记忆按钮事件
+            document.getElementById('clear-storage-btn').addEventListener('click', function() {
+                openPasswordModal();
+            });
+            
+            // 密码模态框相关事件
+            const modal = document.getElementById('passwordModal');
+            const closeBtn = document.querySelector('.close');
+            const submitBtn = document.getElementById('submitPassword');
+            const cancelBtn = document.getElementById('cancelPassword');
+            const passwordInput = document.getElementById('adminPassword');
+            
+            // 点击关闭按钮
+            closeBtn.onclick = function() {
+                modal.style.display = 'none';
+                passwordInput.value = '';
+            }
+            
+            // 点击取消按钮
+            cancelBtn.onclick = function() {
+                modal.style.display = 'none';
+                passwordInput.value = '';
+            }
+            
+            // 点击提交按钮
+            submitBtn.onclick = function() {
+                verifyPassword();
+            }
+            
+            // 按Enter键提交
+            passwordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    verifyPassword();
+                }
+            });
+            
+            // 点击模态框外部关闭
+            window.onclick = function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                    passwordInput.value = '';
+                }
+            }
+        }
+        
+        function openPasswordModal() {
+            document.getElementById('passwordModal').style.display = 'block';
+            document.getElementById('adminPassword').focus();
+        }
+        
+        function verifyPassword() {
+            const inputPassword = document.getElementById('adminPassword').value;
+            if (inputPassword === ADMIN_PASSWORD) {
+                // 密码正确，清除存储的数据
+                localStorage.removeItem('selectedStore');
+                localStorage.removeItem('hasVisitedBefore');
+                currentStore = '';
+                showIndexPage();
+                document.getElementById('passwordModal').style.display = 'none';
+                document.getElementById('adminPassword').value = '';
+                alert('已清除记忆的门店选择，现在将显示首页');
+            } else {
+                // 密码错误
+                alert('密码错误，请重新输入！');
+                document.getElementById('adminPassword').value = '';
+                document.getElementById('adminPassword').focus();
+            }
         }
         
         function selectStore(storeName) {
             localStorage.setItem('selectedStore', storeName);
+            // 标记已经访问过，这样下次直接进入该门店
+            localStorage.setItem('hasVisitedBefore', 'true');
             currentStore = storeName;
             showDetailPage();
         }
@@ -569,7 +754,12 @@
             document.title = '客户管理系统';
             // 清除当前门店选择
             currentStore = '';
-            localStorage.removeItem('selectedStore');
+            
+            // 清空内容区域，确保下次进入详情页时是干净的状态
+            const contentArea = document.querySelector('.content-area');
+            if (contentArea.children.length > 1) { // 如果不是初始状态的iframe，则重置
+                contentArea.innerHTML = '<iframe id="document-frame" class="document-frame" src="about:blank"></iframe>';
+            }
         }
         
         function showDetailPage() {
@@ -586,7 +776,9 @@
         function activateSection(section) {
             // 更新侧边栏按钮状态
             document.querySelectorAll('.sidebar-btn').forEach(btn => {
-                btn.classList.remove('active');
+                if (!btn.classList.contains('back-to-home')) {
+                    btn.classList.remove('active');
+                }
             });
             document.querySelector(`[data-section="${section}"]`).classList.add('active');
             
@@ -595,7 +787,14 @@
         }
         
         function loadDocument(section) {
-            const frame = document.getElementById('document-frame');
+            let frame = document.getElementById('document-frame');
+            
+            // 确保iframe存在
+            if (!frame) {
+                const contentArea = document.querySelector('.content-area');
+                contentArea.innerHTML = '<iframe id="document-frame" class="document-frame" src="about:blank"></iframe>';
+                frame = document.getElementById('document-frame');
+            }
             
             // 获取当前门店对应的文档URL
             if (currentStore && CUSTOMER_LINKS[currentStore]) {
@@ -641,7 +840,9 @@
         
         function showErrorPage(message, url) {
             const frame = document.getElementById('document-frame');
-            frame.style.display = 'none';
+            if (frame) {
+                frame.style.display = 'none';
+            }
             
             document.querySelector('.content-area').innerHTML = `
                 <div class="error-message">
@@ -652,14 +853,6 @@
                     <button class="footer-btn" style="margin-top: 20px;" onclick="location.reload()">刷新页面</button>
                 </div>
             `;
-        }
-        
-        function updatePageBasedOnState() {
-            if(currentStore) {
-                showDetailPage();
-            } else {
-                showIndexPage();
-            }
         }
         
         function toggleSidebar() {
@@ -682,3 +875,6 @@
     </script>
 </body>
 </html>
+
+
+
