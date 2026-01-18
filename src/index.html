@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>爱眼城数字化工作平台</title>
+    <title>青少年近视防控趋势预测系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
             margin: 0;
@@ -13,237 +14,452 @@
         
         body {
             font-family: 'Microsoft YaHei', Arial, sans-serif;
-            background: white;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f5f5f5 100%);
+            padding: 20px;
         }
         
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 25px 20px;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%);
+            color: white;
+            padding: 30px;
             text-align: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
         
         h1 {
-            color: white;
-            font-size: 2.8em;
-            margin: 0;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+            font-size: 2.5em;
+            margin-bottom: 10px;
         }
         
-        .button-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 12px;
-            padding: 25px 20px;
-            max-width: 2560px;
-            margin: 0 auto;
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
         }
-        
-        .btn {
-            padding: 12px 5px;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 18px;
-            font-weight: 600;
-            color: white;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            text-align: center;
-            flex: 2;
-            min-width: 160px;
-            max-width: 240px;
-        }
-        
-        .btn:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-        }
-        
-        .btn:active {
-            transform: translateY(0) scale(0.98);
-        }
-        
-        .btn2 { background: linear-gradient(135deg, #4ECDC4, #44a08d); }
-        .btn3 { background: linear-gradient(135deg, #FFD93D, #f4d03f); }
-        .btn4 { background: linear-gradient(135deg, #A8E6CF, #66b0a7); }
-        .btn5 { background: linear-gradient(135deg, #FFA07A, #ff8c69); }
-        .btn6 { background: linear-gradient(135deg, #9B59B6, #8e44ad); }
-        .btn7 { background: linear-gradient(135deg, #45B7D1, #2980b9); }
-        .btn8 { background: linear-gradient(135deg, #FFEAA7, #f4d160); }
         
         .content {
-            flex: 1;
-            display: flex;
-            align-items: top;
-            justify-content: center;
-            padding: 30px 20px;
+            padding: 30px;
         }
         
-        .desktop {
-            background: white;
-            border-radius: 10px;
-            padding: 10px;
-            max-width: 1960px;
-            width: 90%;
-            text-align: center;
-        }
-        
-        .welcome h3 {
-            font-size: 1.6em;
-            color: #165DFF;
-            margin: 0 0 25px 0;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: #165DFF;
-            background-clip: text;
-        }
-        
-.module-list {
-    text-align: left;
-    list-style: none;
-    margin-top: 15px;
-}
-
-.module-list li {
-    margin: 10px 0;
-    padding: 10px 0;
-    border-bottom: 1px dashed #e0e6ed;
-    font-size: 1.5em;
-}
-
-/* 移动端适配：缩小字号，避免文字溢出 */
-@media (max-width: 768px) {
-    .module-list li {
-        font-size: 1.2em;
-    }
-}
-        
-        .module-list strong {
-            color: #165DFF;
-            font-weight: 600;
-            display: inline-block;
-            width: 240px;
-        }
-        
-        .footer {
-            text-align: center;
-            color: #7f8c8d;
+        .input-section {
+            background: #f8f9fa;
             padding: 25px;
-            font-size: 1.2em;
-            background: rgba(255, 255, 255, 0.7);
-            border-top: 1px solid rgba(0,0,0,0.05);
-        }
-        
-        .top-nav {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            z-index: 1000;
-        }
-        
-        .nav-btn {
-            padding: 10px 15px;
-            border: none;
             border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+        
+        button {
+            background: #2196F3;
             color: white;
-            transition: all 0.3s;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
         }
         
-        .nav-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        button:hover {
+            background: #1976D2;
         }
         
-        @media (max-width: 768px) {
-            .button-grid {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .btn {
-                width: 100%;
-                max-width: 300px;
-            }
-            
-            h1 {
-                font-size: 2.2em;
-            }
-            
-            .welcome h3 {
-                font-size: 1.8em;
-            }
+        .result-section {
+            margin-top: 30px;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .prediction-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        .prediction-table th {
+            background: linear-gradient(135deg, #2196F3, #21CBF3);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .prediction-table td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .prediction-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .prediction-table tr:hover {
+            background-color: #e3f2fd;
+        }
+        
+        .age-cell {
+            font-weight: bold;
+            background-color: #e9ecef !important;
+        }
+        
+        .chart-container {
+            height: 500px;
+            margin: 30px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .high-diopter {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52) !important;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .medium-diopter {
+            background: linear-gradient(45deg, #ffd166, #ffb700) !important;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .low-diopter {
+            background: linear-gradient(45deg, #06d6a0, #04b28a) !important;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 5px solid #2196F3;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #6c757d;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .summary-box {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 5px solid #28a745;
         }
     </style>
 </head>
 <body>
-    <div class="top-nav">
-        <button class="nav-btn" id="fullscreenBtn">全 屏</button>
-    </div>
-    
-    <div class="header">
-        <h1>爱 眼 城 数 字 化 工 作 平 台</h1>
-    </div>
-    
-    <div class="button-grid">
-        <a href="kehuguanli.html" class="btn btn2" target="_blank">👥 客 户 管 理</a>
-        <a href="gongzuorizhi.html" class="btn btn3" target="_blank">📅 工 作 日 志</a>
-        <a href="yingzhiyinghui.html" class="btn btn4" target="_blank">❓应 知 应 会</a>
-        <a href="quguangdujisuan.html" class="btn btn5" target="_blank">🧰 屈 光 度 计 算</a>
-        <a href="tonggaoceliang.html" class="btn btn6" target="_blank">📐 瞳 高 测 量</a>
-        <a href="shigongnengfenxi.html" class="btn btn7" target="_blank">📊视 功 能 分 析</a>
-        <a href="gongsiwenjian.html" class="btn btn8" target="_blank">📑 公 司 文 件</a>
-    </div>
-    
-    <div class="content">
-        <div class="desktop">
-            <div class="welcome">
-                <h3>本平台集成日常办公、制度学习与专业成长资源，助您高效工作、快速提升！</h3>
-            </div>
-            <ul class="module-list">
-                <li><strong>• 👥  客 户 管 理</strong>：维护客户回访跟进记录</li>
-                <li><strong>• 📅  工 作 日 志</strong>：记录每日任务与成果</li>
-                <li><strong>• ❓  应 知 应 会</strong>：员工必备500问</li>
-                <li><strong>• 🧰  屈 光 计 算</strong>：眼视光屈光度计算工具</li>
-                <li><strong>• 📐  瞳 高 测 量</strong>：实际戴镜高度测量</li>
-                <li><strong>• 📊视 功 能 分 析</strong>：双眼视功能诊断分析</li>
-                <li><strong>• 📑  公 司 文 件</strong>：企业内部管理制度</li>
-            </ul>
-        </div>
-    </div>
-    
-    <div class="footer">
-        爱眼城数字化工作平台 - 为您提供全方位的数字化解决方案
-    </div>
-    
-    <script>
-        document.getElementById('fullscreenBtn').addEventListener('click', function() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
-            } else {
-                document.exitFullscreen();
-            }
-        });
+    <div class="container">
+        <header>
+            <h1>青少年近视防控趋势预测系统</h1>
+            <p class="subtitle">科学预测不同防控措施下的度数发展趋势</p>
+        </header>
         
-        document.addEventListener('fullscreenchange', function() {
-            if (!document.fullscreenElement) {
-                console.log('退出全屏');
+        <div class="content">
+            <div class="input-section">
+                <h2>👤 请输入青少年信息</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="childName">姓名：</label>
+                        <input type="text" id="childName" placeholder="请输入孩子姓名" value="小明">
+                    </div>
+                    <div class="form-group">
+                        <label for="currentAge">当前年龄：</label>
+                        <input type="number" id="currentAge" min="6" max="17" value="12" placeholder="6-17岁">
+                    </div>
+                    <div class="form-group">
+                        <label for="currentDiopter">当前度数（度）：</label>
+                        <input type="number" id="currentDiopter" min="50" max="1000" value="350" placeholder="50-1000度">
+                    </div>
+                </div>
+                <button onclick="generatePrediction()">生成预测结果</button>
+            </div>
+            
+            <div class="info-box">
+                <p><strong>说明：</strong>本系统假设不干预情况下每年增长100度近视度数。不同防控措施包括：不干预（每年增长100度）、25%防控、50%防控、75%防控。数值显示为负数表示近视度数（如-350D表示350度近视）。</p>
+            </div>
+            
+            <div class="summary-box" id="summaryBox" style="display: none;">
+                <h3>📊 预测摘要</h3>
+                <p id="summaryText"></p>
+            </div>
+            
+            <div class="result-section">
+                <h2 id="resultTitle">预测结果</h2>
+                <div class="table-container">
+                    <table class="prediction-table" id="predictionTable">
+                        <thead>
+                            <tr>
+                                <th>年龄</th>
+                                <th>不干预</th>
+                                <th>25%防控</th>
+                                <th>50%防控</th>
+                                <th>75%防控</th>
+                            </tr>
+                        </thead>
+                        <tbody id="predictionBody">
+                            <!-- 表格内容将通过JavaScript动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h2>📈 不同防控措施下的度数发展趋势</h2>
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>⚠️ 重要声明：本系统仅供科普参考，具体治疗方案请咨询专业眼科医生</p>
+            <p>数据模型基于青少年近视发展的一般规律构建，假设不干预情况下每年增长100度</p>
+        </footer>
+    </div>
+
+    <script>
+        // 初始化图表
+        let trendChart = null;
+
+        // 生成预测数据
+        function generatePrediction() {
+            const name = document.getElementById('childName').value || '小朋友';
+            const currentAge = parseInt(document.getElementById('currentAge').value);
+            const currentDiopter = parseInt(document.getElementById('currentDiopter').value);
+
+            if (!currentAge || !currentDiopter || currentAge < 6 || currentAge > 17 || currentDiopter < 50 || currentDiopter > 1000) {
+                alert('请输入有效的年龄（6-17岁）和度数（50-1000度）');
+                return;
             }
-        });
+
+            // 更新标题
+            document.getElementById('resultTitle').textContent = `${name}（${currentAge}岁，${currentDiopter}度）的度数发展趋势预测`;
+
+            // 计算预测数据
+            const tableBody = document.getElementById('predictionBody');
+            tableBody.innerHTML = ''; // 清空现有内容
+
+            // 存储图表数据
+            const chartData = {
+                labels: [],
+                datasets: [
+                    {
+                        label: '不干预（每年增长100度）',
+                        data: [],
+                        borderColor: '#FF6384',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        tension: 0.4
+                    },
+                    {
+                        label: '25%防控',
+                        data: [],
+                        borderColor: '#36A2EB',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        tension: 0.4
+                    },
+                    {
+                        label: '50%防控',
+                        data: [],
+                        borderColor: '#4BC0C0',
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        tension: 0.4
+                    },
+                    {
+                        label: '75%防控',
+                        data: [],
+                        borderColor: '#FFCD56',
+                        backgroundColor: 'rgba(255, 205, 86, 0.1)',
+                        tension: 0.4
+                    }
+                ]
+            };
+
+            // 存储关键数据用于摘要
+            let finalNoControl = 0;
+            let finalControl50 = 0;
+            let yearsTo18 = 18 - currentAge;
+
+            for (let age = currentAge; age <= 18; age++) {
+                const yearsFromNow = age - currentAge;
+                
+                // 计算不同防控措施下的度数（不干预每年增长100度）
+                const noControl = calculateDiopter(currentDiopter, yearsFromNow, 0);
+                const control25 = calculateDiopter(currentDiopter, yearsFromNow, 0.25);
+                const control50 = calculateDiopter(currentDiopter, yearsFromNow, 0.5);
+                const control75 = calculateDiopter(currentDiopter, yearsFromNow, 0.75);
+
+                // 记录18岁时的数据
+                if (age === 18) {
+                    finalNoControl = noControl;
+                    finalControl50 = control50;
+                }
+
+                // 添加到图表数据
+                chartData.labels.push(`${age}岁`);
+                chartData.datasets[0].data.push(noControl);
+                chartData.datasets[1].data.push(control25);
+                chartData.datasets[2].data.push(control50);
+                chartData.datasets[3].data.push(control75);
+
+                // 创建表格行
+                const row = document.createElement('tr');
+                
+                // 根据度数范围分配颜色类
+                function getDiopterClass(diopter) {
+                    const absDiopter = Math.abs(diopter);
+                    if (absDiopter >= 600) return 'high-diopter';
+                    if (absDiopter >= 300) return 'medium-diopter';
+                    return 'low-diopter';
+                }
+
+                row.innerHTML = `
+                    <td class="age-cell">${age}岁</td>
+                    <td class="${getDiopterClass(noControl)}">${noControl}D</td>
+                    <td class="${getDiopterClass(control25)}">${control25}D</td>
+                    <td class="${getDiopterClass(control50)}">${control50}D</td>
+                    <td class="${getDiopterClass(control75)}">${control75}D</td>
+                `;
+                
+                tableBody.appendChild(row);
+            }
+
+            // 显示摘要
+            const preventedDiopter = Math.abs(currentDiopter) - Math.abs(finalControl50);
+            document.getElementById('summaryText').innerHTML = `
+                如果从现在开始采取50%防控措施，到18岁时相比不干预可预防加深约<strong>${Math.abs(preventedDiopter)}</strong>度。
+                不干预情况下18岁时预计达到<strong>${Math.abs(finalNoControl)}</strong>度，
+                50%防控措施下预计达到<strong>${Math.abs(finalControl50)}</strong>度。
+            `;
+            document.getElementById('summaryBox').style.display = 'block';
+
+            // 销毁旧图表实例（如果存在）
+            if (trendChart) {
+                trendChart.destroy();
+            }
+
+            // 获取画布上下文
+            const ctx = document.getElementById('trendChart').getContext('2d');
+
+            // 创建新图表
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `从${currentAge}岁到18岁不同防控措施下的度数发展趋势（不干预每年增长100度）`,
+                            font: {
+                                size: 18
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            reverse: false, // 小度数在下方，大度数在上方
+                            title: {
+                                display: true,
+                                text: '度数 (D)',
+                                font: {
+                                    size: 14
+                                }
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return Math.abs(value) + 'D';
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '年龄',
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 计算度数的辅助函数
+        function calculateDiopter(initialDiopter, years, controlRate) {
+            // 基础增长：每年100度
+            const baseAnnualGrowth = 100;
+            
+            // 计算总增长量（应用防控措施）
+            const totalGrowth = baseAnnualGrowth * years * (1 - controlRate);
+            
+            // 返回计算后的度数（保持负值表示近视）
+            return Math.round(initialDiopter + totalGrowth);
+        }
+
+        // 页面加载完成后自动生成示例数据
+        window.onload = function() {
+            generatePrediction();
+        };
     </script>
 </body>
 </html>
