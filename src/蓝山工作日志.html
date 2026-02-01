@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>蓝山爱眼城工作日志系统</title>
+  <style>
+    /* 允许按钮和输入框选择 */
+    input, button, textarea {
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
+    }
+    
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+    }
+    
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow-x: hidden;
+      font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 98vw;
+      height: calc(100vh - 2vw);
+      margin: 1vw auto;
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .header {
+      background: linear-gradient(to right, #1a5fb4, #2980b9);
+      color: white;
+      padding: clamp(15px, 1.8vw, 25px) 20px;
+      text-align: center;
+      font-size: clamp(20px, 2vw, 28px);
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.8vw;
+      padding: clamp(12px, 1.2vw, 20px);
+      background: #f9fbfd;
+      border-bottom: 1px solid #eaeef5;
+      flex-shrink: 0;
+    }
+    
+    .btn {
+      padding: clamp(8px, 0.8vw, 12px) clamp(10px, 1vw, 16px);
+      font-size: clamp(12px, 0.9vw, 14px);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.25s ease;
+      min-width: max-content;
+      flex: 1 0 auto;
+      max-width: 12vw;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .btn-log { background: #27ae60; }
+    .btn-back { background: #7f8c8d; }
+
+    .content-area {
+      flex: 1;
+      position: relative;
+      background: #fff;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 600px;
+      height: calc(100vh - 300px);
+    }
+
+    .log-container {
+      max-width: min(1300px, 95vw);
+      width: 100%;
+      text-align: center;
+      padding: clamp(25px, 3vw, 50px);
+      overflow-y: auto;
+    }
+    
+    .log-title {
+      color: #2c3e50;
+      margin-bottom: clamp(20px, 2vw, 40px);
+      font-size: clamp(22px, 2.5vw, 36px);
+      cursor: pointer;
+      user-select: none;
+      text-align: center;
+    }
+    
+    /* 门店选择页样式 - 响应式网格布局 */
+    .store-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: clamp(15px, 1.5vw, 25px);
+      padding: clamp(20px, 2vw, 40px);
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    
+    .store-btn {
+      padding: clamp(20px, 2vw, 30px) 10px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: clamp(15px, 1.4vw, 20px);
+      color: white;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+      transition: all 0.3s ease;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      min-height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .store-btn:hover {
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    
+    .store-btn:active {
+      transform: translateY(0) scale(1);
+    }
+
+    /* 月份按钮 - 响应式网格布局 */
+    .month-buttons {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: clamp(15px, 1.5vw, 25px);
+      margin-top: clamp(20px, 2vw, 40px);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .month-btn {
+      padding: clamp(15px, 1.5vw, 25px) clamp(12px, 1.2vw, 20px);
+      font-size: clamp(15px, 1.5vw, 22px);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: white;
+      font-weight: bold;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      min-height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .month-btn:hover {
+      transform: translateY(-6px) scale(1.05);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+    }
+    
+    .month-btn:active {
+      transform: translateY(0) scale(1);
+    }
+
+    /* 密码验证弹窗 */
+    .password-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    
+    .modal-content {
+      background: white;
+      padding: clamp(25px, 2.5vw, 40px);
+      border-radius: 15px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+      max-width: min(450px, 90vw);
+      width: 100%;
+    }
+    
+    .modal-content h2 {
+      margin-top: 0;
+      color: #2c3e50;
+      font-size: clamp(20px, 2vw, 28px);
+      margin-bottom: 20px;
+    }
+    
+    .modal-content input {
+      width: 100%;
+      padding: clamp(12px, 1.2vw, 18px);
+      margin: clamp(12px, 1.2vw, 20px) 0;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      font-size: clamp(15px, 1.5vw, 20px);
+      box-sizing: border-box;
+    }
+    
+    .modal-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: clamp(20px, 2vw, 30px);
+    }
+    
+    .modal-btn {
+      padding: clamp(10px, 1vw, 15px) clamp(20px, 2vw, 30px);
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: clamp(14px, 1.4vw, 18px);
+      transition: all 0.2s;
+    }
+    
+    .confirm-btn {
+      background-color: #2ecc71;
+      color: white;
+    }
+    
+    .confirm-btn:hover {
+      background-color: #27ae60;
+    }
+    
+    .cancel-btn {
+      background-color: #e74c3c;
+      color: white;
+    }
+    
+    .cancel-btn:hover {
+      background-color: #c0392b;
+    }
+    
+    .loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    
+    .error {
+      color: #e74c3c;
+      font-size: clamp(12px, 1.1vw, 15px);
+      margin-top: 10px;
+    }
+
+    /* 清除门店提示 */
+    .clear-hint {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(52, 152, 219, 0.9);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 999;
+      animation: fadeInOut 3s ease;
+      display: none;
+    }
+    
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateY(-20px); }
+      10% { opacity: 1; transform: translateY(0); }
+      90% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-20px); }
+    }
+
+    /* 管理密码弹窗 */
+    .admin-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1001;
+    }
+    
+    .admin-modal-content {
+      background: white;
+      padding: clamp(25px, 2.5vw, 40px);
+      border-radius: 15px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+      max-width: min(450px, 90vw);
+      width: 100%;
+    }
+    
+    .admin-modal-content h2 {
+      margin-top: 0;
+      color: #2c3e50;
+      font-size: clamp(20px, 2vw, 28px);
+      margin-bottom: 20px;
+    }
+    
+    .admin-modal-content input {
+      width: 100%;
+      padding: clamp(12px, 1.2vw, 18px);
+      margin: clamp(12px, 1.2vw, 20px) 0;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      font-size: clamp(15px, 1.5vw, 20px);
+      box-sizing: border-box;
+    }
+    
+    .admin-modal-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: clamp(20px, 2vw, 30px);
+    }
+    
+    .admin-modal-btn {
+      padding: clamp(10px, 1vw, 15px) clamp(20px, 2vw, 30px);
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: clamp(14px, 1.4vw, 18px);
+      transition: all 0.2s;
+    }
+    
+    .admin-confirm-btn {
+      background-color: #2ecc71;
+      color: white;
+    }
+    
+    .admin-confirm-btn:hover {
+      background-color: #27ae60;
+    }
+    
+    .admin-cancel-btn {
+      background-color: #e74c3c;
+      color: white;
+    }
+    
+    .admin-cancel-btn:hover {
+      background-color: #c0392b;
+    }
+
+    .hidden { display: none !important; }
+
+    /* 响应式设计优化 */
+    @media screen and (max-width: 1024px) {
+      .store-grid {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 800px;
+      }
+      
+      .month-buttons {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 800px;
+      }
+      
+      .btn {
+        font-size: 12px;
+        padding: 7px 10px;
+        min-width: 70px;
+        max-width: 10vw;
+      }
+    }
+
+    @media screen and (max-width: 768px) {
+      body {
+        padding: 5px;
+      }
+      
+      .container {
+        height: calc(100vh - 10px);
+        border-radius: 8px;
+      }
+      
+      .header {
+        padding: 12px 8px;
+        font-size: 18px;
+      }
+      
+      .content-area {
+        min-height: 550px;
+        height: calc(100vh - 200px);
+      }
+      
+      .nav {
+        gap: 5px;
+        padding: 8px;
+      }
+      
+      .btn {
+        min-width: 70px;
+        font-size: 11px;
+        padding: 6px 8px;
+        border-radius: 6px;
+        flex: 0 0 calc(33% - 5px);
+        max-width: calc(33% - 5px);
+        margin-bottom: 5px;
+      }
+      
+      .store-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 15px;
+        max-width: 500px;
+      }
+      
+      .store-btn {
+        padding: 15px 8px;
+        font-size: 13px;
+        border-radius: 12px;
+        min-height: 80px;
+      }
+      
+      .month-buttons {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 15px;
+        max-width: 500px;
+      }
+      
+      .month-btn {
+        padding: 12px 8px;
+        font-size: 13px;
+        min-height: 80px;
+      }
+      
+      .clear-hint {
+        top: 10px;
+        right: 10px;
+        padding: 8px 12px;
+        font-size: 12px;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .btn {
+        flex: 0 0 calc(50% - 4px);
+        max-width: calc(50% - 4px);
+        font-size: 10px;
+        padding: 5px 6px;
+      }
+      
+      .store-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 10px;
+        max-width: 300px;
+      }
+      
+      .store-btn {
+        padding: 12px 8px;
+        font-size: 12px;
+        min-height: 70px;
+      }
+      
+      .log-title {
+        font-size: 18px;
+        margin-bottom: 20px;
+      }
+      
+      .month-buttons {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 10px;
+        max-width: 300px;
+      }
+      
+      .month-btn {
+        padding: 12px 8px;
+        font-size: 13px;
+        min-height: 80px;
+      }
+      
+      .content-area {
+        min-height: 500px;
+        height: calc(100vh - 180px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 清除门店提示框 -->
+  <div id="clearHint" class="clear-hint">点击5次清除门店选择</div>
+  
+  <!-- 管理密码弹窗 -->
+  <div id="adminModal" class="admin-modal hidden">
+    <div class="admin-modal-content">
+      <h2 id="adminModalTitle">请输入管理密码</h2>
+      <input type="password" id="adminPasswordInput" placeholder="输入管理密码" autocomplete="off" />
+      <div class="error" id="admin123"></div>
+      <div class="admin-modal-buttons">
+        <button class="admin-modal-btn admin-cancel-btn" onclick="closeAdminModal()">取消</button>
+        <button class="admin-modal-btn admin-confirm-btn" onclick="verifyAdminPassword()">确认</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="container">
+    <div class="header">蓝山爱眼城工作日志</div>
+
+
+    <div class="content-area">
+      <div class="log-container">
+        <h1 class="log-title" id="logTitle">2026年工作日志</h1>
+        <div id="logStoreSelection" class="store-grid"></div>
+        <div id="monthSelection" class="hidden">
+          <p style="font-size:18px; color:#555; margin:20px 0; text-align:center;">请选择月份</p>
+          <div class="month-buttons" id="monthButtons"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 工作日志配置
+    const LOG_STORES = [
+      { id: "蓝山二店", name: "蓝山二店", color: "#e74c3c" },
+      { id: "蓝山三店", name: "蓝山三店", color: "#3498db" },
+      { id: "蓝山四店", name: "蓝山四店", color: "#2ecc71" },
+      { id: "蓝山六店", name: "蓝山六店", color: "#9b59b6" },
+      { id: "蓝山七店", name: "蓝山七店", color: "#f39c12" },
+      { id: "蓝山八店", name: "蓝山八店", color: "#1abc9c" }
+    ];
+
+    const LOG_MONTHS = [
+      { id: 1, name: "1月", color: "#ff9999" },
+      { id: 2, name: "2月", color: "#66b3ff" },
+      { id: 3, name: "3月", color: "#99ff99" },
+      { id: 4, name: "4月", color: "#ffcc99" },
+      { id: 5, name: "5月", color: "#ff99cc" },
+      { id: 6, name: "6月", color: "#c2c2f0" },
+      { id: 7, name: "7月", color: "#ffb3e6" },
+      { id: 8, name: "8月", color: "#c4e17f" },
+      { id: 9, name: "9月", color: "#f78fb3" },
+      { id: 10, name: "10月", color: "#a3d5f7" },
+      { id: 11, name: "11月", color: "#d1c4e9" },
+      { id: 12, name: "12月", color: "#b3e0ff" }
+    ];
+
+    const LOG_LINKS = {
+      "蓝山二店": {
+        1: "https://www.kdocs.cn/l/cmjxRvqPkVPc",
+        2: "https://www.kdocs.cn/l/cl24ayAqXYrz",
+        3: "https://www.kdocs.cn/l/cq9Cyj1q2C9F",
+        4: "https://www.kdocs.cn/l/cmjxRvqPkVP",
+        5: "https://www.kdocs.cn/l/cmjxRvqPkVP",
+        6: "https://www.kdocs.cn/l/cmjxRvqPkVP",
+        7: "https://www.kdocs.cn/l/cmjxRvqPkVP",
+        8: "https://www.kdocs.cn/l/cmjxRvqPkVP",
+        9: "https://www.kdocs.cn/l/cmjxRvqPkVP",
+        10: "https://www.kdocs.cn/l/cmjxRvqPkVP",
+        11: "https://www.kdocs.cn/l/cmjxRvqPkVP",
+        12: "https://www.kdocs.cn/l/cmjxRvqPkVP"
+      },
+      "蓝山三店": {
+        1: "https://www.kdocs.cn/l/cu8ZsIVVXwpQ",
+        2: "https://www.kdocs.cn/l/cpbn1aWMW2Y8",
+        3: "https://www.kdocs.cn/l/claFKNU5MkHm",
+        4: "https://www.kdocs.cn/l/cu8ZsIVVXwp",
+        5: "https://www.kdocs.cn/l/cu8ZsIVVXwp",
+        6: "https://www.kdocs.cn/l/cu8ZsIVVXwp",
+        7: "https://www.kdocs.cn/l/cu8ZsIVVXwp",
+        8: "https://www.kdocs.cn/l/cu8ZsIVVXwp",
+        9: "https://www.kdocs.cn/l/cu8ZsIVVXwp",
+        10: "https://www.kdocs.cn/l/cu8ZsIVVXwp",
+        11: "https://www.kdocs.cn/l/cu8ZsIVVXwp",
+        12: "https://www.kdocs.cn/l/cu8ZsIVVXwp"
+      },
+      "蓝山四店": {
+        1: "https://www.kdocs.cn/l/cd5kyf6RCCGT",
+        2: "https://www.kdocs.cn/l/cileA3JPoFL6",
+        3: "https://www.kdocs.cn/l/ci8yEx4CN2rn",
+        4: "https://www.kdocs.cn/l/cd5kyf6RCCG",
+        5: "https://www.kdocs.cn/l/cd5kyf6RCCG",
+        6: "https://www.kdocs.cn/l/cd5kyf6RCCG",
+        7: "https://www.kdocs.cn/l/cd5kyf6RCCG",
+        8: "https://www.kdocs.cn/l/cd5kyf6RCCG",
+        9: "https://www.kdocs.cn/l/cd5kyf6RCCG",
+        10: "https://www.kdocs.cn/l/cd5kyf6RCCG",
+        11: "https://www.kdocs.cn/l/cd5kyf6RCCG",
+        12: "https://www.kdocs.cn/l/cd5kyf6RCCG"
+      },
+      "蓝山六店": {
+        1: "https://www.kdocs.cn/l/cpHjBBQO1IuK",
+        2: "https://www.kdocs.cn/l/cgVU3e5bxfY5",
+        3: "https://www.kdocs.cn/l/caYNJJoNwAan",
+        4: "https://www.kdocs.cn/l/cpHjBBQO1Iu",
+        5: "https://www.kdocs.cn/l/cpHjBBQO1Iu",
+        6: "https://www.kdocs.cn/l/cpHjBBQO1Iu",
+        7: "https://www.kdocs.cn/l/cpHjBBQO1Iu",
+        8: "https://www.kdocs.cn/l/cpHjBBQO1Iu",
+        9: "https://www.kdocs.cn/l/cpHjBBQO1Iu",
+        10: "https://www.kdocs.cn/l/cpHjBBQO1Iu",
+        11: "https://www.kdocs.cn/l/cpHjBBQO1Iu",
+        12: "https://www.kdocs.cn/l/cpHjBBQO1Iu"
+      },
+      "蓝山七店": {
+        1: "https://www.kdocs.cn/l/caUUoDzRqaPk",
+        2: "https://www.kdocs.cn/l/coduTPpm1UD7",
+        3: "https://www.kdocs.cn/l/ceASKXX8qCOH",
+        4: "https://www.kdocs.cn/l/caUUoDzRqaP",
+        5: "https://www.kdocs.cn/l/caUUoDzRqaP",
+        6: "https://www.kdocs.cn/l/caUUoDzRqaP",
+        7: "https://www.kdocs.cn/l/caUUoDzRqaP",
+        8: "https://www.kdocs.cn/l/caUUoDzRqaP",
+        9: "https://www.kdocs.cn/l/caUUoDzRqaP",
+        10: "https://www.kdocs.cn/l/caUUoDzRqaP",
+        11: "https://www.kdocs.cn/l/caUUoDzRqaP",
+        12: "https://www.kdocs.cn/l/caUUoDzRqaP"
+      },
+      "蓝山八店": {
+        1: "https://www.kdocs.cn/l/ckronRyNGXn3",
+        2: "https://www.kdocs.cn/l/cpGDCYz06Ni8",
+        3: "https://www.kdocs.cn/l/crz9t5gFhp9T",
+        4: "https://www.kdocs.cn/l/ckronRyNGXn",
+        5: "https://www.kdocs.cn/l/ckronRyNGXn",
+        6: "https://www.kdocs.cn/l/ckronRyNGXn",
+        7: "https://www.kdocs.cn/l/ckronRyNGXn",
+        8: "https://www.kdocs.cn/l/ckronRyNGXn",
+        9: "https://www.kdocs.cn/l/ckronRyNGXn",
+        10: "https://www.kdocs.cn/l/ckronRyNGXn",
+        11: "https://www.kdocs.cn/l/ckronRyNGXn",
+        12: "https://www.kdocs.cn/l/ckronRyNGXn"
+      }
+    };
+
+    const clearHint = document.getElementById('clearHint');
+    const adminModal = document.getElementById('adminModal');
+    const adminPasswordInput = document.getElementById('adminPasswordInput');
+    const adminErrorMessage = document.getElementById('adminErrorMessage');
+    const adminModalTitle = document.getElementById('adminModalTitle');
+
+    // 管理密码
+    const ADMIN_PASSWORD = "admin123";
+
+    // 点击计数器
+    let clickCounter = { count: 0, timer: null };
+
+    // 显示清除提示
+    function showClearHint() {
+      clearHint.style.display = 'block';
+      setTimeout(() => {
+        clearHint.style.display = 'none';
+      }, 3000);
+    }
+
+    // 显示管理密码弹窗
+    function showAdminModal() {
+      adminPasswordInput.value = '';
+      adminErrorMessage.textContent = '';
+      adminModalTitle.textContent = '清除工作日志门店选择';
+      adminModal.classList.remove('hidden');
+      adminPasswordInput.focus();
+    }
+
+    // 关闭管理密码弹窗
+    function closeAdminModal() {
+      adminModal.classList.add('hidden');
+    }
+
+    // 验证管理密码
+    function verifyAdminPassword() {
+      const input = adminPasswordInput.value.trim();
+      
+      if (!input) {
+        adminErrorMessage.textContent = "请输入管理密码";
+        return;
+      }
+
+      if (input === ADMIN_PASSWORD) {
+        clearLogStore();
+        closeAdminModal();
+      } else {
+        adminErrorMessage.textContent = "管理密码错误";
+        setTimeout(() => {
+          adminErrorMessage.textContent = '';
+        }, 2500);
+      }
+    }
+
+    // 清除工作日志门店选择
+    function clearLogStore() {
+      localStorage.removeItem('selectedLogStore');
+      window.currentLogStoreId = null;
+      alert('门店选择已清除，正在返回门店选择页面...');
+      initLogStoreButtons();
+      document.getElementById('monthSelection').classList.add('hidden');
+      document.getElementById('logStoreSelection').classList.remove('hidden');
+    }
+
+    // 设置点击监听
+    function setupClickListeners() {
+      const logTitle = document.getElementById('logTitle');
+      
+      if (logTitle) {
+        logTitle.onclick = function() {
+          clickCounter.count++;
+          if (clickCounter.timer) {
+            clearTimeout(clickCounter.timer);
+          }
+          clickCounter.timer = setTimeout(() => {
+            clickCounter.count = 0;
+          }, 2000);
+          
+          if (clickCounter.count >= 5) {
+            showClearHint();
+            showAdminModal();
+            clickCounter.count = 0;
+          }
+        };
+      }
+    }
+
+    // 初始化工作日志
+    function initWorkLog() {
+      const selectedStore = localStorage.getItem('selectedLogStore');
+      
+      if (selectedStore && LOG_STORES.some(s => s.id === selectedStore)) {
+        showLogMonthSelection(selectedStore);
+      } else {
+        initLogStoreButtons();
+      }
+      
+      // 设置点击监听
+      setupClickListeners();
+    }
+
+    function initLogStoreButtons() {
+      const container = document.getElementById('logStoreSelection');
+      container.innerHTML = '';
+      LOG_STORES.forEach(store => {
+        const btn = document.createElement('button');
+        btn.className = 'store-btn';
+        btn.textContent = store.name;
+        btn.style.backgroundColor = store.color;
+        btn.onclick = () => selectStore(store.id);
+        container.appendChild(btn);
+      });
+    }
+
+    function selectStore(storeId) {
+      // 将选定的门店存储到localStorage中
+      localStorage.setItem('selectedLogStore', storeId);
+      window.currentLogStoreId = storeId;
+      showLogMonthSelection(storeId);
+    }
+
+    function showLogMonthSelection(storeId) {
+      const store = LOG_STORES.find(s => s.id === storeId);
+      if (store) {
+        document.getElementById('logTitle').textContent = `${store.name} 2026年工作日志`;
+      }
+      document.getElementById('logStoreSelection').classList.add('hidden');
+      document.getElementById('monthSelection').classList.remove('hidden');
+      renderLogMonthButtons();
+      
+      // 重新设置点击监听
+      setupClickListeners();
+    }
+
+    function renderLogMonthButtons() {
+      const container = document.getElementById('monthButtons');
+      container.innerHTML = '';
+      LOG_MONTHS.forEach(month => {
+        const btn = document.createElement('button');
+        btn.className = 'month-btn';
+        btn.textContent = month.name;
+        btn.style.backgroundColor = month.color;
+        btn.onclick = () => openLogLink(window.currentLogStoreId || localStorage.getItem('selectedLogStore'), month.id, btn);
+        container.appendChild(btn);
+      });
+    }
+
+    function openLogLink(storeId, monthId, btnEl) {
+      const url = LOG_LINKS[storeId]?.[monthId];
+      if (!url) {
+        alert("该组合暂无日志链接");
+        return;
+      }
+      btnEl.classList.add('loading');
+      btnEl.textContent = '跳转中…';
+      setTimeout(() => {
+        const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+        if (!newWindow) {
+          alert('浏览器阻止了弹出窗口，请允许后重试。');
+        }
+        btnEl.classList.remove('loading');
+        btnEl.textContent = LOG_MONTHS.find(m => m.id === monthId)?.name || `${monthId}月`;
+      }, 300);
+    }
+
+    function goBack() {
+      // 返回主平台
+      window.location.href = 'index.html';
+    }
+
+    function refreshPage() {
+      location.reload();
+    }
+
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      initWorkLog();
+      
+      // 管理密码弹窗回车键支持
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter' && 
+            !adminModal.classList.contains('hidden')) {
+          verifyAdminPassword();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+
+
+
